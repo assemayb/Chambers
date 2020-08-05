@@ -29,7 +29,17 @@ export const authFail = (err) => {
 };
 
 export const authLogout = () => {
-  localStorage.removeItem("accessToken");
+  const refreshToken = localStorage.getItem("refreshToken");
+  axios
+    .post(`${authURL}/logout`, { token: refreshToken })
+    .then((res) => {
+      console.log(res.status);
+    })
+    .then(() => {
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("accessToken");
+    })
+    .catch((err) => console.error(err));
   return {
     type: AUTH_LOGOUT,
   };
@@ -57,8 +67,12 @@ export const authLogin = (username, password) => {
       })
       .then((res) => {
         const { accessToken, refreshToken } = res.data;
+        const expDate = new Date(new Date().getTime() + 3600 * 1000);
+
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
+        localStorage.setItem("expDate", expDate);
+
         disptch(authSuccess(accessToken));
       })
       .catch((err) => {
@@ -85,12 +99,27 @@ export const authSignUp = (username, password) => {
 };
 
 export const authCheckState = () => {
+  console.log("authCheckState function");
   return (disptch) => {
-    let token = localStorage.getItem("accessToken");
-    if (token === undefined || token == null) {
+    let accessToken = localStorage.getItem("accessToken");
+    let refreshToken = localStorage.getItem("refreshToken");
+
+    // if the user has not logged out
+    if (refreshToken) {
+      axios
+        .post(`${authURL}/token`, { token: refreshToken })
+        .then((res) => {
+          // localStorage.removeItem('accessToken')
+          // localStorage.setItem('accessToken', )
+          const responseData = res.data;
+          console.log(responseData);
+        })
+        .catch((err) => console.error(err));
+    }
+    if (accessToken === undefined || accessToken == null) {
       return;
     } else {
-      disptch(authSuccess(token));
+      disptch(authSuccess(accessToken));
     }
   };
 };

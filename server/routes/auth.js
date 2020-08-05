@@ -14,11 +14,14 @@ router.post("/create-account", async (req, res) => {
     if (username && password) {
       let UserDoesExist = await User.findOne({ name: username });
       if (UserDoesExist) {
-        return res.json({ status: '400', msg: "User with same name exists, try another one" });
+        return res.json({
+          status: "400",
+          msg: "User with same name exists, try another one",
+        });
       }
       let hashedPassword = await bcrypt.hash(password, 10);
       await User.create({ name: username, password: hashedPassword }, () => {
-        res.status(201).json({ status: '201', msg: "User Created" });
+        res.status(201).json({ status: "201", msg: "User Created" });
       });
     } else {
       res.status(400).json({ msg: "Enter username & password" });
@@ -29,13 +32,16 @@ router.post("/create-account", async (req, res) => {
 });
 
 // Logout
-router.delete("/logout", async (req, res) => {
+router.post("/logout", async (req, res) => {
   const { token } = req.body;
   try {
     await RefreshTokens.findOneAndDelete({ value: token }, (err, response) => {
-      res.json({ msg: "logged out" });
+      if (err) {
+        console.error(err);
+      }
+      console.log("logged out")
+      res.status(204);
     });
-    res.sendStatus(204);
   } catch (error) {
     console.error(error);
   }
@@ -48,7 +54,6 @@ router.post("/login", async (req, res) => {
     const userObj = { username };
     const accessToken = generateAccessToken(userObj);
     const refreshToken = jwt.sign(userObj, process.env.REFRESH_TOKEN_SECRET);
-    // ADD THE REFRESH TOKEN TO THE DATABASE
 
     if (username && password) {
       let user = await User.findOne({ name: username });
@@ -57,6 +62,13 @@ router.post("/login", async (req, res) => {
       } else {
         const isCorrect = await bcrypt.compare(password, user.password);
         if (isCorrect) {
+          await RefreshTokens.create(
+            { value: refreshToken },
+            (err, response) => {
+              if (err) console.error(err);
+              console.log("Refresh Token for Login added to database");
+            }
+          );
           res.status(200).json({ accessToken, refreshToken });
         } else {
           res.json({ msg: "Invalid Password" });
@@ -88,7 +100,7 @@ router.post("/token", async (req, res) => {
 });
 
 function generateAccessToken(user) {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "10m" });
 }
 
 module.exports = router;

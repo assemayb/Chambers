@@ -7,15 +7,31 @@ import { connect } from "react-redux";
 import BaseMenu from "./components/Menu";
 import Footer from "./components/Footer";
 
-import {authCheckState} from "./store/actions/auth"
+import { authCheckState } from "./store/actions/auth";
 
 function App(props) {
-  props.checkState()
+  // if (props.token) {
+    // const halfHour = 30 * 1000
+  //   setInterval(() => props.checkState(), 1000);
+  // }
+  // setInterval(() => props.checkState(), 1000);
+  const hours = new Date().getHours() * 60 * 60 * 1000
+  const mins = new Date().getMinutes() * 60 * 1000
+  const secs = new Date().getSeconds() * 1000
+
+  const all  = (hours + mins + secs )
+  const d = new Date().getTime()
+  const isEqual = all === d
+
+  // console.log(all)
+  // console.log(d)
+
+
   return (
     <Fragment>
       <Router>
         <BaseMenu />
-        <BaseRouter />
+        <BaseRouter />)
         <Footer />
       </Router>
     </Fragment>
@@ -33,7 +49,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     login: (username, password) => dispatch(authLogin(username, password)),
-    checkState: () => dispatch(authCheckState())
+    checkState: () => dispatch(authCheckState()),
   };
 };
 export default connect(mapStateToProps, mapDispatchToProps)(App);
