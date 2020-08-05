@@ -10,25 +10,12 @@ import Footer from "./components/Footer";
 import { authCheckState } from "./store/actions/auth";
 
 function App(props) {
-  // if (props.token) {
-    // const halfHour = 30 * 1000
-  //   setInterval(() => props.checkState(), 1000);
-  // }
-  // setInterval(() => props.checkState(), 1000);
-  const hours = new Date().getHours() * 60 * 60 * 1000
-  const mins = new Date().getMinutes() * 60 * 1000
-  const secs = new Date().getSeconds() * 1000
-
-  const all  = (hours + mins + secs )
-  const d = new Date().getTime()
-  const isEqual = all === d
-
-  // console.log(all)
-  // console.log(d)
-
-  props.checkState()
-  console.log(props.isLoggedIn)
-
+  // HANDLING RELOADING
+  if (props.storageHasTokens) {
+    props.checkState();
+  }
+  const halfAnHour = 15 * 1000 * 60;
+  setInterval(() => props.checkState(), halfAnHour);
   return (
     <Fragment>
       <Router>
@@ -41,16 +28,21 @@ function App(props) {
 }
 
 const mapStateToProps = (state) => {
+  const tokens = {
+    acces: localStorage.getItem("accessToken"),
+    refresh: localStorage.getItem("refreshToken"),
+  };
   return {
     token: state.auth.token,
-    isLoggedIn: state.auth.token !== null
+    isAuthenticated: state.auth.token !== null,
+    storageHasTokens: tokens.length !== 0,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    login: (username, password) => dispatch(authLogin(username, password)),
     checkState: () => dispatch(authCheckState()),
   };
 };
+
 export default connect(mapStateToProps, mapDispatchToProps)(App);

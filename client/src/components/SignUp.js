@@ -20,30 +20,26 @@ const RegistrationForm = (props) => {
   const [loading, setLoading] = useState(false);
 
   const token = props.token;
-  const signupSubmit = () => {
+  const signupSubmit = async () => {
     if (username && password) {
-      props.signup(username, password);
-      const msg = localStorage.getItem('msg')
-      const status = localStorage.getItem('status')
-
-      setTimeout(() => {
-        if (!msg) {
-          return ;
-        } else {
-          if (status === "201") {
-            setLoading(true);
-            setMessage("User Created, Redirecting to login page.....");
-            setTimeout(() => {
-              props.history.push("/login");
-            }, 3000);
-          } else if (status === "400") {
-            setMessage(msg);
-          }
+      await props.signup(username, password);
+      let msg = localStorage.getItem("msg");
+      let status = localStorage.getItem("status");
+      if (!msg) {
+        return;
+      } else {
+        if (status === "400") {
+          setMessage(msg);
+        } else if (status === "201") {
+          setLoading(true);
+          setMessage("User Created, Redirecting to login page.....");
+          setTimeout(() => {
+            props.history.push("/login");
+          }, 2000);
         }
-      }, 1000);
-      localStorage.removeItem('msg')
-      localStorage.removeItem('status')
-
+      }
+      localStorage.removeItem("msg");
+      localStorage.removeItem("status");
     } else {
       setMessage("Invalid data");
     }

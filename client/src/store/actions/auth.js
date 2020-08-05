@@ -31,8 +31,11 @@ export const authFail = (err) => {
 export const authLogout = () => {
   const refreshToken = localStorage.getItem("refreshToken");
   let accessToken = localStorage.getItem("accessToken");
+
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("accessToken");
+  localStorage.removeItem("expDate");
+
   if (refreshToken && accessToken) {
     axios
       .post(`${authURL}/logout`, { token: refreshToken })
@@ -69,7 +72,6 @@ export const authLogin = (username, password) => {
       .then((res) => {
         const { accessToken, refreshToken } = res.data;
         const expDate = new Date(new Date().getTime() + 3600 * 1000);
-
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
         localStorage.setItem("expDate", expDate);
@@ -100,27 +102,31 @@ export const authSignUp = (username, password) => {
 };
 
 export const authCheckState = () => {
-  console.log("authCheckState function");
-  return (disptch) => {
-    let accessToken = localStorage.getItem("accessToken");
-    let refreshToken = localStorage.getItem("refreshToken");
+  let accessToken = localStorage.getItem("accessToken");
+  let refreshToken = localStorage.getItem("refreshToken");
 
-    // if the user has not logged out
-    // if (refreshToken) {
-    //   axios
-    //     .post(`${authURL}/token`, { token: refreshToken })
-    //     .then((res) => {
-    // localStorage.removeItem('accessToken')
-    // localStorage.setItem('accessToken', )
-    // const responseData = res.data;
-    //       console.log(responseData);
-    //     })
-    //     .catch((err) => console.error(err));
-    // }
-    if (accessToken === undefined || accessToken == null) {
-      return;
-    } else {
-      disptch(authSuccess(accessToken));
+  let exp = localStorage.getItem("expDate");
+  let expDate = exp && new Date(exp);
+  const nowDate = new Date(new Date().getTime());
+  console.log("Auth CheckState function");
+
+  return (disptch) => {
+    if (refreshToken && accessToken) {
+      if (expDate > nowDate) {
+        disptch(authSuccess(accessToken));
+      } else {
+        axios
+          .post(`${authURL}/token`, { token: refreshToken })
+          .then((res) => {
+            console.log(res.data.accessToken);
+            localStorage.removeItem("accessToken");
+            localStorage.setItem("accessToken", res.data.accessToken);
+          })
+          .catch((err) => console.error(err));
+      }
     }
+    //  if() {
+    //   disptch(authLogout());
+    // }
   };
 };

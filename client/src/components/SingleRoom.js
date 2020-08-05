@@ -164,7 +164,7 @@ const styles = {
   },
   header: {
     marginTop: "0.6rem",
-    padding: "1rem",s
+    padding: "1rem",
   },
   singleQuestion: {
     paddingTop: "1rem",
