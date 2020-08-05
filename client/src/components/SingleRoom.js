@@ -35,14 +35,16 @@ function SingleRoom(props) {
 
   useEffect(() => {
     const getRoomData = () => {
-      authAxios
-        .get(`${roomsURL}/${newTitle}`)
-        .then((res) => {
-          let data = res.data;
-          setQuestions(data);
-          setLoading(false);
-        })
-        .catch((err) => console.error(err));
+      if (props.isLoggedIn) {
+        authAxios
+          .get(`${roomsURL}/${newTitle}`)
+          .then((res) => {
+            let data = res.data;
+            setQuestions(data);
+            setLoading(false);
+          })
+          .catch((err) => console.error(err));
+      }
     };
     getRoomData();
   }, [loading, setLoading]);
@@ -58,12 +60,10 @@ function SingleRoom(props) {
         })
         .then((res) => {
           console.log(res.data);
-          setLoading(true)
-          setTimeout(() => setLoading(false), 2000)
+          setLoading(true);
+          setTimeout(() => setLoading(false), 2000);
         })
-        .then(
-          setLoading(false)
-        )
+        .then(setLoading(false))
         .catch((err) => {
           console.error(err);
         });
@@ -157,14 +157,14 @@ function SingleRoom(props) {
 }
 
 const styles = {
-  header: {
-    marginTop: "0.6rem",
-    padding: "1rem",
-  },
   mainContainer: {
     backgroundColor: "#fcfcfc",
     marginTop: "0.6rem",
     padding: "2rem",
+  },
+  header: {
+    marginTop: "0.6rem",
+    padding: "1rem",s
   },
   singleQuestion: {
     paddingTop: "1rem",
@@ -172,4 +172,11 @@ const styles = {
   },
 };
 
-export default withRouter(SingleRoom);
+const mapStateToProps = (state) => {
+  return {
+    isLoggedIn: state.auth.token !== null,
+  };
+};
+
+export default withRouter(connect(mapStateToProps)(SingleRoom));
+

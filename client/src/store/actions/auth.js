@@ -30,16 +30,17 @@ export const authFail = (err) => {
 
 export const authLogout = () => {
   const refreshToken = localStorage.getItem("refreshToken");
-  axios
-    .post(`${authURL}/logout`, { token: refreshToken })
-    .then((res) => {
-      console.log(res.status);
-    })
-    .then(() => {
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("accessToken");
-    })
-    .catch((err) => console.error(err));
+  let accessToken = localStorage.getItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("accessToken");
+  if (refreshToken && accessToken) {
+    axios
+      .post(`${authURL}/logout`, { token: refreshToken })
+      .then((res) => {
+        console.log(res.status);
+      })
+      .catch((err) => console.error(err));
+  }
   return {
     type: AUTH_LOGOUT,
   };
@@ -105,17 +106,17 @@ export const authCheckState = () => {
     let refreshToken = localStorage.getItem("refreshToken");
 
     // if the user has not logged out
-    if (refreshToken) {
-      axios
-        .post(`${authURL}/token`, { token: refreshToken })
-        .then((res) => {
-          // localStorage.removeItem('accessToken')
-          // localStorage.setItem('accessToken', )
-          const responseData = res.data;
-          console.log(responseData);
-        })
-        .catch((err) => console.error(err));
-    }
+    // if (refreshToken) {
+    //   axios
+    //     .post(`${authURL}/token`, { token: refreshToken })
+    //     .then((res) => {
+    // localStorage.removeItem('accessToken')
+    // localStorage.setItem('accessToken', )
+    // const responseData = res.data;
+    //       console.log(responseData);
+    //     })
+    //     .catch((err) => console.error(err));
+    // }
     if (accessToken === undefined || accessToken == null) {
       return;
     } else {

@@ -26,6 +26,8 @@ function App(props) {
   // console.log(all)
   // console.log(d)
 
+  props.checkState()
+  console.log(props.isLoggedIn)
 
   return (
     <Fragment>
@@ -40,9 +42,8 @@ function App(props) {
 
 const mapStateToProps = (state) => {
   return {
-    loading: state.auth.loading,
-    error: state.auth.error,
     token: state.auth.token,
+    isLoggedIn: state.auth.token !== null
   };
 };
 

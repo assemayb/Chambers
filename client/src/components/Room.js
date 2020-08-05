@@ -15,11 +15,14 @@ import { Link, withRouter, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 
 function MainLayout(props) {
+  // const [ allRooms, setAllRooms ] = useState([])
   const [array1, setArray1] = useState([]);
   const [array2, setArray2] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ visible: "Hide", value: "" });
 
+
+  const isLoggedIn = props.isLoggedIn
   useEffect(() => {
     const getData = () => {
       axios
@@ -52,7 +55,7 @@ function MainLayout(props) {
       newTitle += roomtitle[arrLength - 1];
     }
 
-    if (localStorage.getItem("accessToken")) {
+    if (isLoggedIn) {
       props.history.push(`/rooms/${newTitle}`);      
       
     } else {
@@ -175,4 +178,10 @@ const styles = {
   },
 };
 
-export default withRouter(connect()(MainLayout));
+const mapStateToProps = (state) => {
+  return {
+    isLoggedIn: state.auth.token !== null
+  };
+};
+
+export default withRouter(connect(mapStateToProps)(MainLayout));

@@ -260,7 +260,7 @@ function authenticateUser(req, res, next) {
         // return res.status(403).json({ msg: 'Not Authenticated'})
         return res.status(403).json(error)
       }
-      // req.user = user;
+      req.user = user;
       next();
     });
   }
