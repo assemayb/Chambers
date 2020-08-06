@@ -40,6 +40,7 @@ function SingleRoom(props) {
           .get(`${roomsURL}/${newTitle}`)
           .then((res) => {
             let data = res.data;
+            console.log(data)
             setQuestions(data);
             setLoading(false);
           })
@@ -52,11 +53,13 @@ function SingleRoom(props) {
   const submitAnswer = (dataObj) => {
     const { questionTitle, answerValue } = dataObj;
     // console.log(questionTitle, answerValue);
+    const currentUser = props.currentUser
     if (questionTitle && answerValue) {
       axios
         .put(`${roomsURL}/${newTitle}/vote-for-answer`, {
           questionTitle,
           answer: answerValue,
+          username: currentUser
         })
         .then((res) => {
           console.log(res.data);
@@ -175,6 +178,7 @@ const styles = {
 const mapStateToProps = (state) => {
   return {
     isLoggedIn: state.auth.token !== null,
+    currentUser: state.auth.currentLoggedUser
   };
 };
 

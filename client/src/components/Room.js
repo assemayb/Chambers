@@ -11,7 +11,7 @@ import {
 } from "semantic-ui-react";
 import axios from "axios";
 import { roomsURL } from "../constants";
-import { Link, withRouter, Redirect } from "react-router-dom";
+import { Link, withRouter, Redirect, NavLink } from "react-router-dom";
 import { connect } from "react-redux";
 
 function MainLayout(props) {
@@ -21,14 +21,14 @@ function MainLayout(props) {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ visible: "Hide", value: "" });
 
-
-  const isLoggedIn = props.isLoggedIn
+  const isLoggedIn = props.isLoggedIn;
   useEffect(() => {
     const getData = () => {
       axios
         .get(roomsURL)
         .then((res) => {
           let arr = res.data;
+          console.log(arr)
           let middle = Math.floor(arr.length / 2);
           let x = arr.slice(0, middle);
           let y = arr.slice(middle, arr.length);
@@ -56,14 +56,13 @@ function MainLayout(props) {
     }
 
     if (isLoggedIn) {
-      props.history.push(`/rooms/${newTitle}`);      
-      
+      props.history.push(`/rooms/${newTitle}`);
     } else {
       setMessage({
         visible: "Show",
         value: "Only Authenticated Users can access this ",
       });
-
+      window.scrollTo(0, 100);
       setTimeout(() => {
         setMessage({ visible: "Hide", value: "" });
       }, 4000);
@@ -106,10 +105,13 @@ function MainLayout(props) {
                         onClick={() => enterSingleRoom(room.title)}
                       >
                         <List.Content>
-                          <List.Header as="h2">
-                            <Link onClick={() => enterSingleRoom(room.title)}>
+                          <List.Header as="h3">
+                            <Header
+                              style={{ color: "#1E70BF", cursor: "pointer" }}
+                              onClick={() => enterSingleRoom(room.title)}
+                            >
                               {room.title}
-                            </Link>
+                            </Header>
                           </List.Header>
                           <List.Icon
                             name="box"
@@ -137,11 +139,14 @@ function MainLayout(props) {
                         onClick={() => enterSingleRoom(room.title)}
                       >
                         <List.Content>
-                          <List.Header
-                            as="h2"
-                            onClick={() => enterSingleRoom(room.title)}
-                          >
-                            <Link> {room.title} </Link>
+                          <List.Header as="h2">
+                            <Link
+                              style={{ color: "#1E70BF", cursor: "pointer" }}
+                              onClick={() => enterSingleRoom(room.title)}
+                            >
+                              {" "}
+                              {room.title}{" "}
+                            </Link>
                           </List.Header>
                           <List.Icon
                             name="box"
@@ -180,7 +185,7 @@ const styles = {
 
 const mapStateToProps = (state) => {
   return {
-    isLoggedIn: state.auth.token !== null
+    isLoggedIn: state.auth.token !== null,
   };
 };
 

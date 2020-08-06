@@ -14,10 +14,11 @@ export const authStart = () => {
   };
 };
 
-export const authSuccess = (token) => {
+export const authSuccess = (token, username) => {
   return {
     type: AUTH_SUCCESS,
     token,
+    username,
   };
 };
 
@@ -32,10 +33,11 @@ export const authLogout = () => {
   const refreshToken = localStorage.getItem("refreshToken");
   let accessToken = localStorage.getItem("accessToken");
 
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("expDate");
-
+  // localStorage.removeItem("refreshToken");
+  // localStorage.removeItem("accessToken");
+  // localStorage.removeItem("username");
+  // localStorage.removeItem("expDate");
+  localStorage.clear()
   if (refreshToken && accessToken) {
     axios
       .post(`${authURL}/logout`, { token: refreshToken })
@@ -62,30 +64,31 @@ export const authSignup = (info) => {
 };
 
 export const authLogin = (username, password) => {
-  return (disptch) => {
-    disptch(authStart());
+  return (dispatch) => {
+    dispatch(authStart());
     axios
       .post(`${authURL}/login`, {
         username,
         password,
       })
       .then((res) => {
-        const { accessToken, refreshToken } = res.data;
+        const { accessToken, refreshToken, username } = res.data;
         const expDate = new Date(new Date().getTime() + 3600 * 1000);
+        localStorage.setItem("username", username);
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
         localStorage.setItem("expDate", expDate);
 
-        disptch(authSuccess(accessToken));
+        dispatch(authSuccess(accessToken, username));
       })
       .catch((err) => {
-        disptch(authFail(err));
+        dispatch(authFail(err));
       });
   };
 };
 
 export const authSignUp = (username, password) => {
-  return (disptch) => {
+  return (dispatch) => {
     axios
       .post(`${authURL}/create-account`, {
         username,
@@ -93,7 +96,7 @@ export const authSignUp = (username, password) => {
       })
       .then((res) => {
         let resData = res.data;
-        disptch(authSignup(resData));
+        dispatch(authSignup(resData));
       })
       .catch((err) => {
         console.error(err);
@@ -102,18 +105,21 @@ export const authSignUp = (username, password) => {
 };
 
 export const authCheckState = () => {
+  
+  let username = localStorage.getItem('username')
   let accessToken = localStorage.getItem("accessToken");
   let refreshToken = localStorage.getItem("refreshToken");
 
   let exp = localStorage.getItem("expDate");
   let expDate = exp && new Date(exp);
   const nowDate = new Date(new Date().getTime());
+  
   console.log("Auth CheckState function");
 
-  return (disptch) => {
+  return (dispatch) => {
     if (refreshToken && accessToken) {
       if (expDate > nowDate) {
-        disptch(authSuccess(accessToken));
+        dispatch(authSuccess(accessToken, username));
       } else {
         axios
           .post(`${authURL}/token`, { token: refreshToken })
@@ -126,7 +132,7 @@ export const authCheckState = () => {
       }
     }
     //  if() {
-    //   disptch(authLogout());
+    //   dispatch(authLogout());
     // }
   };
 };

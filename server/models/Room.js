@@ -10,6 +10,10 @@ const RoomsSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  participants: {
+    type: [String],
+    required: false
+  }
 });
 
 module.exports = mongoose.model("Room", RoomsSchema);

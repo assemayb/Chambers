@@ -4,6 +4,9 @@ const TokensSchema = new mongoose.Schema({
   value: {
     type: String,
   },
+  username: {
+    type: String
+  },
   createdAt: {
     type: Date,
     default: Date.now,

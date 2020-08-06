@@ -4,6 +4,7 @@ const Room = require("../models/Room");
 const Question = require("../models/Question");
 const User = require("../models/User");
 const Answer = require("../models/Answer");
+const e = require("express");
 
 const router = express.Router();
 
@@ -14,10 +15,44 @@ router.get("/", async (req, res) => {
       .populate("admin")
       .sort({ createdAt: "desc" })
       .lean();
-    for (let obj of allRooms) {
-      delete obj.admin.password;
+    // Delete un-needed data
+    for (let room of allRooms) {
+      delete room._id;
+      delete room.admin._id;
+      delete room.admin.password;
     }
     res.status(200).json(allRooms);
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+// ENTERING A SINGLE ROOM
+router.get("/:name", authenticateUser, async (req, res) => {
+  const roomName = req.params.name;
+  try {
+    let room = await Room.findOne({ title: roomName }).lean();
+    if (!room) {
+      res.sendStatus(404);
+    } else {
+      let roomID = room && room._id;
+      let relatedQuestions = await Question.find({ room: roomID })
+        .sort({ createdAt: "desc" })
+        .lean();
+      for (let question of relatedQuestions) {
+        let questionObj = question;
+        let questionID = question._id;
+        let questionRelatedAns = await Answer.find({ question: questionID })
+          .sort({ createdAt: "desc" })
+          .lean();
+        if (questionRelatedAns) {
+          questionObj.answers = questionRelatedAns;
+          question = questionObj;
+        }
+      }
+      res.json(relatedQuestions).status(200);
+      // console.log(JSON.stringify(relatedQuestions, null, 5))
+    }
   } catch (error) {
     console.error(error);
   }
@@ -64,37 +99,6 @@ router.delete("/:name", authenticateUser, async (req, res) => {
           res.json({ msg: `${roomName} has been deleted!!` });
         }
       });
-    }
-  } catch (error) {
-    console.error(error);
-  }
-});
-
-// ENTERING A SINGLE ROOM
-router.get("/:name", authenticateUser, async (req, res) => {
-  const roomName = req.params.name;
-  try {
-    let room = await Room.findOne({ title: roomName }).lean();
-    if (!room) {
-      res.sendStatus(404);
-    } else {
-      let roomID = room && room._id;
-      let relatedQuestions = await Question.find({ room: roomID })
-        .sort({ createdAt: "desc" })
-        .lean();
-      for (let question of relatedQuestions) {
-        let questionObj = question;
-        let questionID = question._id;
-        let questionRelatedAns = await Answer.find({ question: questionID })
-          .sort({ createdAt: "desc" })
-          .lean();
-        if (questionRelatedAns) {
-          questionObj.answers = questionRelatedAns;
-          question = questionObj;
-        }
-      }
-      res.json(relatedQuestions).status(200)
-      console.log(JSON.stringify(relatedQuestions, null, 5))
     }
   } catch (error) {
     console.error(error);
@@ -218,34 +222,63 @@ router.delete("/:name/delete-answer", authenticateUser, async (req, res) => {
 
 //VOTING FOR A SPECIFIC ANSWER ... SELECTING AN ANSWER
 
-router.put("/:name/vote-for-answer",/* authenticateUser */  async (req, res) => {
-  const roomName = req.params.name;
-  const { questionTitle, answer } = req.body;
-  try {
-    let room = await Room.findOne({ title: roomName }).lean();
-    let roomID = room && room._id;
-    let question = await Question.findOne({
-      title: questionTitle,
-      room: roomID,
-    });
-    let questionID = question && question._id;
-    if (question) {
-      let ans = await Answer.findOne({ value: answer, question: questionID });
-      if(!ans){
-        return res.status(400).json({ msg: "No matching answer"})
+router.put(
+  "/:name/vote-for-answer",
+  /* authenticateUser */ async (req, res) => {
+    const roomName = req.params.name;
+    const { questionTitle, answer, username } = req.body;
+    try {
+      let room = await Room.findOne({ title: roomName }).lean();
+      let roomParticipants = room.participants;
+      let roomPartLength = roomParticipants.length;
+      if (roomParticipants === undefined || roomPartLength < 1) {
+        await Room.update(
+          { title: roomName },
+          { $push: { participants: username } }
+        );
+      } else {
+        let isUserInPart = false;
+        for (let user of roomParticipants) {
+          if (user === username) {
+            isUserInPart = true;
+          }
+        }
+        if (!isUserInPart) {
+          await Room.update(
+            { title: roomName },
+            { $push: { participants: username } }
+          );
+          console.log("User added to this room's participants")
+        }
+        else {
+          console.log("User is in this room participants")
+        }
+        
       }
-      let answerVote = ans && ans.vote;
-      await Answer.updateOne(ans, { vote: answerVote + 1 }, () => {
-        res.json({ msg: "Vote Added" });
-      });
-    } else {
-      res.sendStatus(400);
-    }
-  } catch (error) {
-    console.error(error);
-  }
-});
 
+      let roomID = room && room._id;
+      let question = await Question.findOne({
+        title: questionTitle,
+        room: roomID,
+      });
+      let questionID = question && question._id;
+      if (question) {
+        let ans = await Answer.findOne({ value: answer, question: questionID });
+        if (!ans) {
+          return res.status(400).json({ msg: "No matching answer" });
+        }
+        let answerVote = ans && ans.vote;
+        await Answer.updateOne(ans, { vote: answerVote + 1 }, () => {
+          res.json({ msg: "Vote Added" });
+        });
+      } else {
+        res.sendStatus(400);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+);
 
 // REQUEST USER AUTH
 function authenticateUser(req, res, next) {
@@ -258,7 +291,7 @@ function authenticateUser(req, res, next) {
       if (error) {
         console.error(error);
         // return res.status(403).json({ msg: 'Not Authenticated'})
-        return res.status(403).json(error)
+        return res.status(403).json(error);
       }
       req.user = user;
       next();

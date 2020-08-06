@@ -10,7 +10,7 @@ const BaseMenu = (props) => {
   const token = props.token;
 
   return (
-    <Menu size="big" color="blue" style={styles.menu}>
+    <Menu size="large" color="blue" style={styles.menu}>
       <Link to="/">
         <Menu.Item
           style={{ padding: "1.5rem", height: '100%', width: '100%'}}

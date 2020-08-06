@@ -9,8 +9,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // Array of rooms the user is in
   rooms: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: [mongoose.Schema.Types.ObjectId],
     ref: "Room",
   },
   createdAt: {
