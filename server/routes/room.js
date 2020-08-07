@@ -27,6 +27,26 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get Certain user rooms
+router.get("/user-rooms", authenticateUser ,async (req, res) => {
+  const adminName = req.user.username
+  try {
+    let admin = await User.findOne({ name: adminName });
+    let adminID = admin && admin._id;
+    if (adminID) {
+      let allUserRooms = await Room.find({ admin: adminID });
+      let allUserRoomsName = [];
+      allUserRooms.forEach((room) => {
+        allUserRoomsName.push({ title: room.title, createdAt: room.createdAt });
+      });
+      res.status(200).json(allUserRoomsName);
+    } else {
+      console.log("No admin with this id");
+    }
+  } catch (err) {
+    console.error(err);
+  }
+});
 // ENTERING A SINGLE ROOM
 router.get("/:name", authenticateUser, async (req, res) => {
   const roomName = req.params.name;
@@ -59,33 +79,58 @@ router.get("/:name", authenticateUser, async (req, res) => {
 });
 
 // CREATING A ROOM
-router.post("/create", authenticateUser, async (req, res) => {
-  const { username, title } = req.body;
-  try {
-    let user = await User.findOne({ name: username }).lean();
-    let userID = user && user._id;
-    if (userID) {
-      let rooms = await Room.findOne({ title: title });
-      if (rooms) {
-        res.json({ msg: "Enter a different Room Title" });
+router.post(
+  "/create",
+  /* authenticateUser, */ async (req, res) => {
+    const { username, title } = req.body;
+    try {
+      let user = await User.findOne({ name: username }).lean();
+      let userID = user && user._id;
+      if (userID) {
+        let rooms = await Room.findOne({ title: title });
+        if (rooms) {
+          res.json({ msg: "Enter a different Room Title" });
+        } else {
+          await Room.create({ title: title, admin: userID }, () => {
+            res.status(201).json({ msg: "room created" });
+          });
+          let userRooms = user.rooms;
+          let userRoomsArrLength = userRooms && userRooms.length;
+          if (userRooms === undefined || userRoomsArrLength < 1) {
+            await User.updateOne(
+              { name: username },
+              { $push: { rooms: title } }
+            );
+            console.log("Room is added to the user's");
+          } else {
+            let isFound = false;
+            for (userRoom of userRooms) {
+              if (userRoom === title) {
+                isFound = true;
+              }
+            }
+            !isFound
+              ? await User.updateOne(
+                  { name: username },
+                  { $push: { rooms: title } }
+                )
+              : console.log("Room is already in this user's rooms");
+          }
+        }
       } else {
-        await Room.create({ title: title, admin: userID }, () => {
-          res.status(201).json({ msg: "room created" });
-        });
+        res.json({ msg: "Invalid Data" });
       }
-    } else {
-      res.json({ msg: "Invalid Data" });
+    } catch (error) {
+      console.error(error);
     }
-  } catch (error) {
-    console.error(error);
   }
-});
+);
 
 // DELETE A ROOM
 router.delete("/:name", authenticateUser, async (req, res) => {
+  const roomName = req.params.name;
+  const reqName = req.body.name;
   try {
-    const roomName = req.params.name;
-    const reqName = req.body.name;
     const room = await Room.findOne({ title: roomName })
       .populate("admin")
       .lean();
@@ -248,12 +293,10 @@ router.put(
             { title: roomName },
             { $push: { participants: username } }
           );
-          console.log("User added to this room's participants")
+          console.log("User added to this room's participants");
+        } else {
+          console.log("User is in this room participants");
         }
-        else {
-          console.log("User is in this room participants")
-        }
-        
       }
 
       let roomID = room && room._id;

@@ -42,6 +42,7 @@ function MainLayout(props) {
     };
     getData();
   }, []);
+  
   const enterSingleRoom = (title) => {
     let roomtitle = title.split(" ");
     let newTitle = "";

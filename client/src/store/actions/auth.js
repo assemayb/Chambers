@@ -124,9 +124,12 @@ export const authCheckState = () => {
         axios
           .post(`${authURL}/token`, { token: refreshToken })
           .then((res) => {
-            console.log(res.data.accessToken);
             localStorage.removeItem("accessToken");
+            localStorage.removeItem("expDate");
             localStorage.setItem("accessToken", res.data.accessToken);
+            const expDate = new Date(new Date().getTime() + 3600 * 1000);
+            localStorage.setItem("expDate", expDate);
+            dispatch(authSuccess(res.data.accessToken, username))
           })
           .catch((err) => console.error(err));
       }
