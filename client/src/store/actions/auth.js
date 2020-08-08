@@ -31,7 +31,7 @@ export const authFail = (err) => {
 
 export const authLogout = () => {
   const refreshToken = localStorage.getItem("refreshToken");
-  let accessToken = localStorage.getItem("accessToken");
+  const accessToken = localStorage.getItem("accessToken");
 
   // localStorage.removeItem("refreshToken");
   // localStorage.removeItem("accessToken");
@@ -72,6 +72,7 @@ export const authLogin = (username, password) => {
         password,
       })
       .then((res) => {
+        localStorage.clear()
         const { accessToken, refreshToken, username } = res.data;
         const expDate = new Date(new Date().getTime() + 3600 * 1000);
         localStorage.setItem("username", username);
@@ -134,8 +135,5 @@ export const authCheckState = () => {
           .catch((err) => console.error(err));
       }
     }
-    //  if() {
-    //   dispatch(authLogout());
-    // }
   };
 };

@@ -28,16 +28,21 @@ router.get("/", async (req, res) => {
 });
 
 // Get Certain user rooms
-router.get("/user-rooms", authenticateUser ,async (req, res) => {
-  const adminName = req.user.username
+router.get("/user-rooms", authenticateUser, async (req, res) => {
+  const adminName = req.user.username;
   try {
     let admin = await User.findOne({ name: adminName });
     let adminID = admin && admin._id;
     if (adminID) {
       let allUserRooms = await Room.find({ admin: adminID });
+      console.log(allUserRooms);
       let allUserRoomsName = [];
       allUserRooms.forEach((room) => {
-        allUserRoomsName.push({ title: room.title, createdAt: room.createdAt });
+        allUserRoomsName.push({
+          title: room.title,
+          createdAt: room.createdAt,
+          parts: room.participants,
+        });
       });
       res.status(200).json(allUserRoomsName);
     } else {

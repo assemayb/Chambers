@@ -1,21 +1,23 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import {
   Segment,
   Container,
   Grid,
   Header,
-  List,
-  ListContent,
   Divider,
-  Image,
-  Column,
   Row,
   Form,
   Button,
-  Checkbox,
+  Loader,
+  List
 } from "semantic-ui-react";
 import axios from "axios";
-
 import { roomsURL } from "../constants";
 import { connect } from "react-redux";
 import { authAxios } from "../utils";
@@ -23,24 +25,20 @@ import { authAxios } from "../utils";
 function MainLayout(props) {
   const [questions, setQuestions] = useState(["1"]);
   const [userRooms, setUserRooms] = useState([]);
-  const [dataChanged, setDataChanged] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const isLoggedIn = props.isLoggedIn;
+  const admin = props.currentLoggedUser;
 
   useEffect(() => {
     const getUserRooms = () => {
-      const admin = props.currentLoggedUser;
-      // axios
-      //   .get(`${roomsURL}/user-rooms/${admin}`)
-      //   .then((res) => {
-      //     console.log(res.data);
-      //     setUserRooms(res.data);
-      //   })
       authAxios
         .get(`${roomsURL}/user-rooms`)
         .then((res) => {
-          console.log(res.data);
           setUserRooms(res.data);
+          setTimeout(() => {
+            setLoading(false);
+          }, 100);
         })
         .catch((err) => {
           console.error(err);
@@ -48,6 +46,7 @@ function MainLayout(props) {
     };
     getUserRooms();
   }, []);
+
   const enterSingleRoom = (title) => {
     let roomtitle = title.split(" ");
     let newTitle = "";
@@ -62,6 +61,10 @@ function MainLayout(props) {
     }
     props.history.push(`/rooms/${newTitle}`);
   };
+  let arr = [];
+  for (let x = 0; x < 100; x++) {
+    arr.push(x);
+  }
 
   return (
     <Container style={styles.container}>
@@ -69,10 +72,19 @@ function MainLayout(props) {
         <Grid columns={2}>
           <Grid.Row>
             <Grid.Column width={6}>
-              <Segment style={{ backgroundColor: "#f9f9f9" }}>
-                <Header>Create new rooms</Header>
+              <Segment
+                style={{
+                  backgroundColor: "#f9f9f9",
+                  borderRadius: "10px 10px",
+                }}
+              >
+                <h1>Create new rooms</h1>
               </Segment>
-              <Segment>
+              <Segment
+                style={{
+                  backgroundColor: "#f9f9f9",
+                }}
+              >
                 <Form id="questionsForm">
                   <Form.Field>
                     <label>room title</label>
@@ -93,18 +105,36 @@ function MainLayout(props) {
               </Segment>
             </Grid.Column>
             <Grid.Column width={10}>
-              <Segment style={{ backgroundColor: "#f9f9f9" }}>
-                <h3>Manage your rooms</h3>
+              <Segment
+                style={{
+                  backgroundColor: "#f9f9f9",
+                  borderRadius: "10px 10px",
+                }}
+              >
+                <h1>Manage your rooms</h1>
               </Segment>
-              <Segment>
+              <Segment
+                style={{
+                  backgroundColor: "#f9f9f9",
+                  padding: "1rem",
+                  textAlign: "center",
+                }}
+              >
+                {loading && (
+                  <div>
+                    <Loader active inline="centered" />
+                  </div>
+                )}
                 {userRooms.map((room) => (
                   <Segment
                     key={room.id}
-                    width={4}
-                    style={{ cursor: "pointer" }}
+                    style={{ cursor: "pointer", marginLeft: '7rem', marginRight: '7rem' }}
                     onClick={() => enterSingleRoom(room.title)}
                   >
-                    <Header as="a">{room.title}</Header>
+                    <div>
+                      <h3 as="a">{room.title}</h3>
+                      <List.Description>{room.parts.length} users</List.Description>
+                    </div>
                   </Segment>
                 ))}
               </Segment>
@@ -143,10 +173,10 @@ function MainLayout(props) {
 
 const styles = {
   container: {
-    margin: "5rem",
+    margin: "1.5rem",
+    padding: "5rem",
     textAlign: "center",
-    padding: "8rem",
-    height: "58vh",
+    // height: "58vh",
   },
   column: {
     wdith: "33.3%",
