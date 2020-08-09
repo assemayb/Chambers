@@ -12,7 +12,7 @@ import { connect } from "react-redux";
 import { authLogin } from "../store/actions/auth";
 import { Redirect } from "react-router-dom";
 
-const LoginForm = ({ token, login, error, history }) => {
+const LoginForm = ({ token, login, error}) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");

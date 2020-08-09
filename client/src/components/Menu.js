@@ -13,7 +13,7 @@ const BaseMenu = (props) => {
     <Menu size="large" color="blue" style={styles.menu}>
       <Link to="/">
         <Menu.Item
-          style={{ padding: "1.5rem", height: '100%', width: '100%'}}
+          style={{ height: '100%', width: '100%'}}
           name="home"
           active={activeItem === "home"}
           onClick={handleItemClick}
@@ -24,7 +24,7 @@ const BaseMenu = (props) => {
       </Link>
       <Link to="/allrooms">
         <Menu.Item
-          style={{ padding: "1.5rem" }}
+          style={{ height: '100%', width: '100%'}}
           icon="table"
           name="chambers"
           active={activeItem === "chambers"}
@@ -33,7 +33,7 @@ const BaseMenu = (props) => {
       </Link>
       <Link to="/">
         <Menu.Item
-          style={{ padding: "1.5rem" }}
+          style={{ height: '100%', width: '100%'}}
           icon="table"
           name="public"
           active={activeItem === "public"}
@@ -62,13 +62,9 @@ const BaseMenu = (props) => {
 };
 
 const styles = {
-  menu: {
-    paddingLeft: "6rem",
-    paddingRight: "6rem",
-    paddingTop: "1rem",
-    paddingBottom: "1rem",
-    
-  },
+  // menu: {
+  //  height: '7vh'
+  // },
 };
 
 const mapStateToProps = (state) => {

@@ -8,6 +8,7 @@ import {
   Divider,
   Dimmer,
   Loader,
+  Image,
 } from "semantic-ui-react";
 import axios from "axios";
 import { roomsURL } from "../constants";
@@ -28,7 +29,7 @@ function MainLayout(props) {
         .get(roomsURL)
         .then((res) => {
           let arr = res.data;
-          console.log(arr)
+          console.log(arr);
           let middle = Math.floor(arr.length / 2);
           let x = arr.slice(0, middle);
           let y = arr.slice(middle, arr.length);
@@ -42,7 +43,7 @@ function MainLayout(props) {
     };
     getData();
   }, []);
-  
+
   const enterSingleRoom = (title) => {
     let roomtitle = title.split(" ");
     let newTitle = "";
@@ -75,7 +76,7 @@ function MainLayout(props) {
       <>
         <Segment style={{ height: "100vh" }}>
           <Dimmer active inverted>
-            <Loader inverted content="Loading" />
+            <Loader size="large" inverted content="Loading.." />
           </Dimmer>
         </Segment>
       </>
@@ -177,7 +178,11 @@ const styles = {
     marginLeft: "1rem",
     textAlign: "center",
   },
-  item: { backgroundColor: "#F2F2F2", padding: "1rem", borderRadius: "30px" },
+  item: {
+    backgroundColor: "#F2F2F2",
+    padding: "1rem",
+    borderRadius: "30px",
+  },
   container: {
     marginTop: "7rem",
     textAlign: "center",

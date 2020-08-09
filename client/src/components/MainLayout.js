@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
-import { Container } from "semantic-ui-react";
+import { Container, Segment } from "semantic-ui-react";
 import OutPage from "./OutPage";
 import Inpage from "./Inpage";
 
