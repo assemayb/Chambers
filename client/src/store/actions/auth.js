@@ -32,12 +32,7 @@ export const authFail = (err) => {
 export const authLogout = () => {
   const refreshToken = localStorage.getItem("refreshToken");
   const accessToken = localStorage.getItem("accessToken");
-
-  // localStorage.removeItem("refreshToken");
-  // localStorage.removeItem("accessToken");
-  // localStorage.removeItem("username");
-  // localStorage.removeItem("expDate");
-  localStorage.clear()
+  localStorage.clear();
   if (refreshToken && accessToken) {
     axios
       .post(`${authURL}/logout`, { token: refreshToken })
@@ -64,23 +59,28 @@ export const authSignup = (info) => {
 };
 
 export const authLogin = (username, password) => {
+  localStorage.clear();
   return (dispatch) => {
-    dispatch(authStart());
     axios
       .post(`${authURL}/login`, {
         username,
         password,
       })
       .then((res) => {
-        localStorage.clear()
-        const { accessToken, refreshToken, username } = res.data;
-        const expDate = new Date(new Date().getTime() + 3600 * 1000);
-        localStorage.setItem("username", username);
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
-        localStorage.setItem("expDate", expDate);
+        let msg = res.data.msg
+        if (msg) {
+          dispatch(authFail(msg))
+        } else {
+          const { accessToken, refreshToken, username } = res.data;
+          const expDate = new Date(new Date().getTime() + 3600 * 1000);
+          localStorage.setItem("username", username);
+          localStorage.setItem("accessToken", accessToken);
+          localStorage.setItem("refreshToken", refreshToken);
+          localStorage.setItem("expDate", expDate);
+          dispatch(authStart());
 
-        dispatch(authSuccess(accessToken, username));
+          dispatch(authSuccess(accessToken, username));
+        }
       })
       .catch((err) => {
         dispatch(authFail(err));
@@ -106,15 +106,14 @@ export const authSignUp = (username, password) => {
 };
 
 export const authCheckState = () => {
-  
-  let username = localStorage.getItem('username')
+  let username = localStorage.getItem("username");
   let accessToken = localStorage.getItem("accessToken");
   let refreshToken = localStorage.getItem("refreshToken");
 
   let exp = localStorage.getItem("expDate");
   let expDate = exp && new Date(exp);
   const nowDate = new Date(new Date().getTime());
-  
+
   console.log("Auth CheckState function");
 
   return (dispatch) => {
@@ -130,7 +129,7 @@ export const authCheckState = () => {
             localStorage.setItem("accessToken", res.data.accessToken);
             const expDate = new Date(new Date().getTime() + 3600 * 1000);
             localStorage.setItem("expDate", expDate);
-            dispatch(authSuccess(res.data.accessToken, username))
+            dispatch(authSuccess(res.data.accessToken, username));
           })
           .catch((err) => console.error(err));
       }

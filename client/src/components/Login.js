@@ -12,20 +12,19 @@ import { connect } from "react-redux";
 import { authLogin } from "../store/actions/auth";
 import { Redirect } from "react-router-dom";
 
-
-
-const LoginForm = (props) => {
+const LoginForm = ({ token, login, error, history }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [err, setErr] = useState("");
 
-  const token = props.token;
-
-  const login = () => {
+  const loginUser = () => {
     if (username && password) {
-      props.login(username, password);
+      login(username, password);
     } else {
-      setError("Enter Valid Data");
+      setErr("Enter Valid Data");
+      setTimeout(() => {
+        setErr("");
+      }, 2000);
     }
   };
 
@@ -47,8 +46,8 @@ const LoginForm = (props) => {
           >
             Login to your account
           </Header>
-          <Form size="big" inverted onSubmit={login}>
-            {error && <h6>{error}</h6>}
+          <Form size="big" inverted onSubmit={loginUser}>
+            {err && <h6>{err}</h6>}
             <Segment>
               <Form.Input
                 onChange={(e) => setUsername(e.target.value)}

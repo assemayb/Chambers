@@ -69,6 +69,7 @@ router.post("/login", async (req, res) => {
               console.log("Refresh Token for Login added to database");
             }
           );
+
           res.status(200).json({ username, accessToken, refreshToken });
         } else {
           res.json({ msg: "Invalid Password" });
