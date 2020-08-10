@@ -35,13 +35,13 @@ router.get("/user-rooms", authenticateUser, async (req, res) => {
     let adminID = admin && admin._id;
     if (adminID) {
       let allUserRooms = await Room.find({ admin: adminID });
-      console.log(allUserRooms);
       let allUserRoomsName = [];
       allUserRooms.forEach((room) => {
         allUserRoomsName.push({
           title: room.title,
           createdAt: room.createdAt,
           parts: room.participants,
+
         });
       });
       res.status(200).json(allUserRoomsName);
@@ -88,6 +88,8 @@ router.post(
   "/create",
   /* authenticateUser, */ async (req, res) => {
     const { username, title } = req.body;
+    // const tile = req.body.title
+    // const username = req.user.username
     try {
       let user = await User.findOne({ name: username }).lean();
       let userID = user && user._id;

@@ -40,9 +40,8 @@ function SingleRoom(props) {
           .get(`${roomsURL}/${newTitle}`)
           .then((res) => {
             let data = res.data;
-            console.log(data)
-            setQuestions(data);
             setLoading(false);
+            setQuestions(data);
           })
           .catch((err) => console.error(err));
       }
@@ -64,7 +63,7 @@ function SingleRoom(props) {
         .then((res) => {
           console.log(res.data);
           setLoading(true);
-          setTimeout(() => setLoading(false), 2000);
+          // setTimeout(() => setLoading(false), 2000);
         })
         .then(setLoading(false))
         .catch((err) => {

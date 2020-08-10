@@ -14,6 +14,8 @@ import axios from "axios";
 import { roomsURL } from "../constants";
 import { Link, withRouter, Redirect, NavLink } from "react-router-dom";
 import { connect } from "react-redux";
+import { prettifyLocation } from "../utils";
+
 
 function MainLayout(props) {
   // const [ allRooms, setAllRooms ] = useState([])
@@ -45,26 +47,15 @@ function MainLayout(props) {
   }, []);
 
   const enterSingleRoom = (title) => {
-    let roomtitle = title.split(" ");
-    let newTitle = "";
-    if (roomtitle.length === 1) {
-      newTitle = roomtitle[0];
-    } else {
-      let arrLength = roomtitle.length;
-      for (let i = 0; i < arrLength - 1; i++) {
-        newTitle += roomtitle[i] += "_";
-      }
-      newTitle += roomtitle[arrLength - 1];
-    }
-
     if (isLoggedIn) {
+      const newTitle = prettifyLocation(title)
       props.history.push(`/rooms/${newTitle}`);
     } else {
+      window.scrollTo(0, 50);
       setMessage({
         visible: "Show",
-        value: "Only Authenticated Users can access this ",
+        value: `${title} is private a room!`,
       });
-      window.scrollTo(0, 100);
       setTimeout(() => {
         setMessage({ visible: "Hide", value: "" });
       }, 4000);

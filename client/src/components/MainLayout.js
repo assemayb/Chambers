@@ -5,48 +5,50 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
+
 import { Container, Segment } from "semantic-ui-react";
 import OutPage from "./OutPage";
 import Inpage from "./Inpage";
 
 import { roomsURL } from "../constants";
 import { connect } from "react-redux";
-import { authAxios } from "../utils";
+import { authAxios, prettifyLocation } from "../utils";
 
-const MainLayout = React.memo((props) => {
-  const [userRooms, setUserRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+const MainLayout = (props) => {  
   const isLoggedIn = props.isLoggedIn;
   const admin = props.currentLoggedUser;
 
+  const [userRooms, setUserRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [ currentAdmin , setcurrentAdmin ] = useState(admin)
+  
+  
   useEffect(() => {
+     
     const getUserRooms = () => {
-      authAxios
-        .get(`${roomsURL}/user-rooms`)
-        .then((res) => {
-          setUserRooms(res.data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error(err);
-        });
+      if (isLoggedIn) {
+        authAxios
+          .get(`${roomsURL}/user-rooms`)
+          .then((res) => {
+            setLoading(false);
+            setUserRooms(res.data);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      }
     };
+
     getUserRooms();
-  }, []);
+
+    return () => {
+      console.log("component unmounted")
+      setUserRooms([]);
+    };
+  }, [currentAdmin, loading, setLoading]);
 
   const enterSingleRoom = (title) => {
-    let roomtitle = title.split(" ");
-    let newTitle = "";
-    if (roomtitle.length === 1) {
-      newTitle = roomtitle[0];
-    } else {
-      let arrLength = roomtitle.length;
-      for (let i = 0; i < arrLength - 1; i++) {
-        newTitle += roomtitle[i] += "_";
-      }
-      newTitle += roomtitle[arrLength - 1];
-    }
+    const newTitle = prettifyLocation(title)
     props.history.push(`/rooms/${newTitle}`);
   };
 
@@ -57,17 +59,19 @@ const MainLayout = React.memo((props) => {
           enterSingleRoom={enterSingleRoom}
           userRooms={userRooms}
           loading={loading}
+          setLoading={setLoading}
+          currentAdmin={currentAdmin}
         />
       ) : (
         <OutPage />
       )}
     </Container>
   );
-});
+}
 
 const styles = {
   container: {
-    margin: "2rem",
+    margin: "3rem",
     padding: "4rem",
     textAlign: "center",
   },

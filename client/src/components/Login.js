@@ -12,7 +12,7 @@ import { connect } from "react-redux";
 import { authLogin } from "../store/actions/auth";
 import { Redirect } from "react-router-dom";
 
-const LoginForm = ({ token, login, error}) => {
+const LoginForm = ({ token, login, error, history}) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
@@ -27,9 +27,9 @@ const LoginForm = ({ token, login, error}) => {
       }, 2000);
     }
   };
-
+  
   if (token) {
-    return <Redirect to="/" />;
+    return (<Redirect to="/"/>)
   } else {
     return (
       <Grid
