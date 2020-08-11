@@ -16,9 +16,8 @@ import { Link, withRouter, Redirect, NavLink } from "react-router-dom";
 import { connect } from "react-redux";
 import { prettifyLocation } from "../utils";
 
-
 function MainLayout(props) {
-  // const [ allRooms, setAllRooms ] = useState([])
+  // const [allRooms, setAllRooms] = useState([]);
   const [array1, setArray1] = useState([]);
   const [array2, setArray2] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +31,7 @@ function MainLayout(props) {
         .then((res) => {
           let arr = res.data;
           console.log(arr);
+          // setAllRooms=(arr)
           let middle = Math.floor(arr.length / 2);
           let x = arr.slice(0, middle);
           let y = arr.slice(middle, arr.length);
@@ -48,7 +48,7 @@ function MainLayout(props) {
 
   const enterSingleRoom = (title) => {
     if (isLoggedIn) {
-      const newTitle = prettifyLocation(title)
+      const newTitle = prettifyLocation(title);
       props.history.push(`/rooms/${newTitle}`);
     } else {
       window.scrollTo(0, 50);
@@ -89,7 +89,7 @@ function MainLayout(props) {
           <Grid.Row>
             <Grid.Column>
               <List divided relaxed>
-                {array1.map((room, id) => {
+                {array2.map((room, id) => {
                   return (
                     <Container style={styles.room}>
                       <List.Item
@@ -98,13 +98,18 @@ function MainLayout(props) {
                         onClick={() => enterSingleRoom(room.title)}
                       >
                         <List.Content>
-                          <List.Header as="h3">
-                            <Header
-                              style={{ color: "#1E70BF", cursor: "pointer" }}
+                          <List.Header as="h2">
+                            <Link
+                              style={{
+                                color: "#1E70BF",
+                                cursor: "pointer",
+                                textAlign: "center",
+                              }}
                               onClick={() => enterSingleRoom(room.title)}
                             >
-                              {room.title}
-                            </Header>
+                              {" "}
+                              {room.title}{" "}
+                            </Link>
                           </List.Header>
                           <List.Icon
                             name="box"
@@ -123,7 +128,7 @@ function MainLayout(props) {
             </Grid.Column>
             <Grid.Column>
               <List divided relaxed>
-                {array2.map((room, id) => {
+                {array1.map((room, id) => {
                   return (
                     <Container style={styles.room}>
                       <List.Item
@@ -134,11 +139,14 @@ function MainLayout(props) {
                         <List.Content>
                           <List.Header as="h2">
                             <Link
-                              style={{ color: "#1E70BF", cursor: "pointer" }}
+                              style={{
+                                color: "#1E70BF",
+                                cursor: "pointer",
+                                textAlign: "center",
+                              }}
                               onClick={() => enterSingleRoom(room.title)}
                             >
-                              {" "}
-                              {room.title}{" "}
+                              {room.title}
                             </Link>
                           </List.Header>
                           <List.Icon
@@ -164,19 +172,18 @@ function MainLayout(props) {
 }
 
 const styles = {
-  room: {
-    padding: "2rem",
-    marginLeft: "1rem",
+  container: {
+    marginTop: "5rem",
     textAlign: "center",
+  },
+  room: {
+    padding: "1rem",
+    marginLeft: "1rem",
   },
   item: {
     backgroundColor: "#F2F2F2",
     padding: "1rem",
-    borderRadius: "30px",
-  },
-  container: {
-    marginTop: "7rem",
-    textAlign: "center",
+    borderRadius: "40px",
   },
 };
 

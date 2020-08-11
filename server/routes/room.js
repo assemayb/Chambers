@@ -4,7 +4,6 @@ const Room = require("../models/Room");
 const Question = require("../models/Question");
 const User = require("../models/User");
 const Answer = require("../models/Answer");
-const e = require("express");
 
 const router = express.Router();
 
@@ -41,7 +40,6 @@ router.get("/user-rooms", authenticateUser, async (req, res) => {
           title: room.title,
           createdAt: room.createdAt,
           parts: room.participants,
-
         });
       });
       res.status(200).json(allUserRoomsName);
@@ -136,20 +134,17 @@ router.post(
 // DELETE A ROOM
 router.delete("/:name", authenticateUser, async (req, res) => {
   const roomName = req.params.name;
-  const reqName = req.body.name;
+  const reqUserName = req.user.username;
   try {
     const room = await Room.findOne({ title: roomName })
       .populate("admin")
       .lean();
     if (!room) res.json({ msg: "No room" });
-    const storyAdminName = room.admin.name;
-    if (reqName === storyAdminName) {
-      await Room.findOneAndDelete({ title: roomName }, (err, response) => {
-        if (err) {
-          console.error(err);
-        } else {
-          res.json({ msg: `${roomName} has been deleted!!` });
-        }
+    const roomAdminName = room.admin.name;
+    if (reqUserName === roomAdminName) {
+      await Room.deleteOne(room, (err, response) => {
+        if (err) return console.error(err);
+        res.json({ msg: `${roomName} has been deleted!!` });
       });
     }
   } catch (error) {

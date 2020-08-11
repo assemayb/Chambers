@@ -10,6 +10,8 @@ import {
   List,
   Card,
   Dropdown,
+  Icon,
+  Modal,
 } from "semantic-ui-react";
 import { authAxios } from "../utils";
 import { roomsURL } from "../constants";
@@ -19,7 +21,7 @@ export default function Inpage({
   userRooms,
   loading,
   currentAdmin,
-  setLoading
+  setLoading,
 }) {
   const [newRoom, setNewRoom] = useState({
     username: currentAdmin,
@@ -27,6 +29,8 @@ export default function Inpage({
   });
   const [newQuestion, setNewQuestion] = useState("");
   const [options, setOptions] = useState([]);
+  const [openModel, setOpenModel] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState("");
 
   useEffect(() => {
     let dropdownOptions = [];
@@ -44,13 +48,14 @@ export default function Inpage({
   const handleOnChange = (name, value) => {
     setNewRoom({ ...newRoom, [name]: value });
   };
+
   const submitNewRoom = () => {
     const { username, title } = newRoom;
     if (title && username) {
       authAxios
         .post(`${roomsURL}/create`, { username, title })
         .then((res) => {
-          setLoading(true)
+          setLoading(true);
         })
         .catch((err) => console.error(err));
     }
@@ -65,14 +70,54 @@ export default function Inpage({
           question: newQuestion,
         })
         .then((res) => {
-          setLoading(true)
+          setLoading(true);
           console.log(res.data);
         })
         .catch((err) => console.error(err));
     }
   };
+
+  const handleOpenModal = (title) => {
+    setOpenModel(true);
+    setRoomToDelete(title);
+  };
+
+  const deleteClickedRoom = () => {
+    const title = roomToDelete;
+    if (title) {
+      authAxios
+        .delete(`${roomsURL}/${title}`, { data: { adminName: currentAdmin } })
+        .then(setOpenModel(false))
+        .then((res) => {
+          console.log(res.data);
+          setLoading(true);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  };
   return (
     <Container>
+      <Modal
+        closeIcon
+        open={openModel}
+        onClose={() => setOpenModel(false)}
+        onOpen={() => setOpenModel(true)}
+      >
+        <Header icon="trash" content="Deleting A Room" />
+        <Modal.Content>
+          <p>Are you sure you want to delete this room? {currentAdmin}</p>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button color="green" onClick={() => setOpenModel(false)}>
+            <Icon name="remove" /> No
+          </Button>
+          <Button color="red" onClick={deleteClickedRoom}>
+            <Icon name="checkmark" /> Yes
+          </Button>
+        </Modal.Actions>
+      </Modal>
       <Grid columns={2} doubling>
         <Grid.Row>
           <Grid.Column width={4}>
@@ -161,22 +206,29 @@ export default function Inpage({
                     <Loader active inline="centered" />
                   </div>
                 )}
-
-                <List relaxed style={{ padding: "1rem" }}>
+                <List relaxed style={{ padding: "0.3rem" }}>
                   {userRooms.map((room) => {
                     return (
                       <List.Item>
-                        <Card
-                          style={{ width: "200px", backgroundColor: "#FAFAFA" }}
-                          onClick={() => enterSingleRoom(room.title)}
-                        >
-                          <Card.Content>
-                            <Card.Header>{room.title}</Card.Header>
-                            <Card.Meta style={{ fontSize: "10px" }}>
-                              {room.parts.length} users
-                            </Card.Meta>
-                          </Card.Content>
-                        </Card>
+                        <Container>
+                          <Card style={{ backgroundColor: "#FAFAFA" }}>
+                            <Card.Content
+                              style={{ cursor: "pointer" }}
+                              onClick={() => enterSingleRoom(room.title)}
+                            >
+                              <Card.Header>{room.title}</Card.Header>
+                              <Card.Meta style={{ fontSize: "10px" }}>
+                                {room.parts.length} users
+                              </Card.Meta>
+                            </Card.Content>
+                            <Card.Content>
+                              <Button
+                                onClick={() => handleOpenModal(room.title)}
+                                icon="trash"
+                              ></Button>
+                            </Card.Content>
+                          </Card>
+                        </Container>
                       </List.Item>
                     );
                   })}
