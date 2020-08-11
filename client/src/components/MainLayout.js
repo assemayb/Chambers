@@ -18,13 +18,12 @@ const MainLayout = (props) => {
   const isLoggedIn = props.isLoggedIn;
   const admin = props.currentLoggedUser;
 
+  const [ currentAdmin , setcurrentAdmin ] = useState(admin)
   const [userRooms, setUserRooms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [ currentAdmin , setcurrentAdmin ] = useState(admin)
-  
+  const [ dataChanged , setDataChanged ] = useState(false)
   
   useEffect(() => {
-     
     const getUserRooms = () => {
       if (isLoggedIn) {
         authAxios
@@ -38,14 +37,8 @@ const MainLayout = (props) => {
           });
       }
     };
-
     getUserRooms();
-
-    return () => {
-      console.log("component unmounted")
-      setUserRooms([]);
-    };
-  }, [currentAdmin, loading, setLoading]);
+  }, [loading, setLoading,  dataChanged]);
 
   const enterSingleRoom = (title) => {
     const newTitle = prettifyLocation(title)
@@ -61,6 +54,8 @@ const MainLayout = (props) => {
           loading={loading}
           setLoading={setLoading}
           currentAdmin={currentAdmin}
+          setDataChanged={setDataChanged}
+          dataChanged={dataChanged}
         />
       ) : (
         <OutPage />

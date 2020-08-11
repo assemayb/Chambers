@@ -31,7 +31,7 @@ const BaseMenu = (props) => {
           onClick={handleItemClick}
         />
       </Link>
-      <Link to="/">
+      {/* <Link to="/">
         <Menu.Item
           style={{ height: '100%', width: '100%'}}
           icon="table"
@@ -39,7 +39,7 @@ const BaseMenu = (props) => {
           active={activeItem === "public"}
           onClick={handleItemClick}
         />
-      </Link>
+      </Link> */}
       <Menu.Menu position="right">
         <Menu.Item
           name="profile"

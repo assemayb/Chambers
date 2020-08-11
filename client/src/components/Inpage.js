@@ -10,24 +10,23 @@ import {
   List,
   Card,
   Dropdown,
-  Icon,
-  Modal,
 } from "semantic-ui-react";
+import RemoveModal from "./RemoveModal";
 import { authAxios } from "../utils";
 import { roomsURL } from "../constants";
 
 export default function Inpage({
   enterSingleRoom,
   userRooms,
-  loading,
   currentAdmin,
+  loading,
   setLoading,
+  dataChanged,
+  setDataChanged,
 }) {
-  const [newRoom, setNewRoom] = useState({
-    username: currentAdmin,
-    title: "",
-  });
+  const [newRoom, setNewRoom] = useState({ username: currentAdmin, title: "" });
   const [newQuestion, setNewQuestion] = useState("");
+  const [newQuestionAns, setNewQuesionAns] = useState(["ans one"]);
   const [options, setOptions] = useState([]);
   const [openModel, setOpenModel] = useState(false);
   const [roomToDelete, setRoomToDelete] = useState("");
@@ -43,7 +42,11 @@ export default function Inpage({
       dropdownOptions.push(roomObj);
     }
     setOptions(dropdownOptions);
-  }, [userRooms, loading]);
+  }, [userRooms]);
+
+  useEffect(() => {
+    console.log("data changed");
+  }, [dataChanged]);
 
   const handleOnChange = (name, value) => {
     setNewRoom({ ...newRoom, [name]: value });
@@ -53,74 +56,88 @@ export default function Inpage({
     const { username, title } = newRoom;
     if (title && username) {
       authAxios
-        .post(`${roomsURL}/create`, { username, title })
+        .post(`${roomsURL}/create`, { title })
         .then((res) => {
-          setLoading(true);
+          setDataChanged((prevState) => !prevState);
         })
         .catch((err) => console.error(err));
     }
   };
 
-  const submitNewQuestion = () => {
+  const deleteClickedRoom = () => {
+    const title = roomToDelete;
+    console.log(title);
+    authAxios
+      .delete(`${roomsURL}/${title}`, { data: { adminName: currentAdmin } })
+      .then((res) => {
+        console.log(res.data);
+        setOpenModel(false);
+        setLoading(true);
+        // setDataChanged((prev) => !prev);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+
+  const increaseAnsArr = () => {
+    let ans = newQuestionAns;
+    ans.push("another answer");
+    setNewQuesionAns(ans);
+    setDataChanged((prev) => !prev);
+    console.log(newQuestionAns);
+  };
+
+  function handleAddAns(itemInex, ansVal) {
+    let questionAns = newQuestionAns;
+    questionAns[itemInex] = ansVal;
+    setNewQuesionAns(questionAns);
+    console.log(newQuestionAns);
+  }
+
+  function submitNewQuestion() {
     const el = document.getElementById("roomTitleElement");
     const roomTitle = el && el.innerText;
+    let newQuestionAnswers = [];
+    newQuestionAns.forEach((ans) => {
+      newQuestionAnswers.push(ans);
+    });
+    const isEnoughAns = newQuestionAnswers.length >= 3;
     if (newQuestion && roomTitle) {
-      authAxios
-        .post(`${roomsURL}/${roomTitle}/create-question`, {
-          question: newQuestion,
-        })
-        .then((res) => {
-          setLoading(true);
-          console.log(res.data);
-        })
-        .catch((err) => console.error(err));
+      if (isEnoughAns) {
+        authAxios
+          .post(`${roomsURL}/${roomTitle}/create-question`, {
+            question: newQuestion,
+            answers: newQuestionAnswers,
+          })
+          .then((res) => {
+            console.log(res.data);
+            setLoading(true);
+            window.location.reload(false)
+          })
+          .catch((err) => console.error(err));
+      } else {
+        console.error("not enough answers dude !");
+      }
     }
-  };
+  }
 
   const handleOpenModal = (title) => {
     setOpenModel(true);
     setRoomToDelete(title);
   };
 
-  const deleteClickedRoom = () => {
-    const title = roomToDelete;
-    if (title) {
-      authAxios
-        .delete(`${roomsURL}/${title}`, { data: { adminName: currentAdmin } })
-        .then(setOpenModel(false))
-        .then((res) => {
-          console.log(res.data);
-          setLoading(true);
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    }
-  };
   return (
     <Container>
-      <Modal
-        closeIcon
-        open={openModel}
-        onClose={() => setOpenModel(false)}
-        onOpen={() => setOpenModel(true)}
-      >
-        <Header icon="trash" content="Deleting A Room" />
-        <Modal.Content>
-          <p>Are you sure you want to delete this room? {currentAdmin}</p>
-        </Modal.Content>
-        <Modal.Actions>
-          <Button color="green" onClick={() => setOpenModel(false)}>
-            <Icon name="remove" /> No
-          </Button>
-          <Button color="red" onClick={deleteClickedRoom}>
-            <Icon name="checkmark" /> Yes
-          </Button>
-        </Modal.Actions>
-      </Modal>
+      <RemoveModal
+        setOpenModel={setOpenModel}
+        currentAdmin={currentAdmin}
+        deleteClickedRoom={deleteClickedRoom}
+        openModel={openModel}
+      />
       <Grid columns={2} doubling>
         <Grid.Row>
-          <Grid.Column width={4}>
+          <Grid.Column width={5}>
             <Segment style={{ marginLeft: "2rem" }}>
               <Segment
                 style={{
@@ -163,7 +180,7 @@ export default function Inpage({
                 <Header>questions</Header>
               </Segment>
               <Segment>
-                <Form onSubmit={submitNewQuestion}>
+                <Form>
                   <Form.Field>
                     <label>room title</label>
                     <Dropdown
@@ -184,9 +201,34 @@ export default function Inpage({
                       onChange={(e) => setNewQuestion(e.target.value)}
                     />
                   </Form.Field>
-                  <Button compact type="submit">
-                    create
-                  </Button>
+                  {newQuestionAns &&
+                    newQuestionAns.map((ans, index) => {
+                      return (
+                        <Form.Field key={ans.id}>
+                          <input
+                            placeholder={newQuestionAns[index]}
+                            name="answer"
+                            onChange={(e) =>
+                              handleAddAns(index, e.target.value)
+                            }
+                          />
+                        </Form.Field>
+                      );
+                    })}
+                  <Button.Group>
+                    <Button
+                      color="facebook"
+                      floated="left"
+                      compact
+                      type="submit"
+                      onClick={submitNewQuestion}
+                    >
+                      create
+                    </Button>
+                    <Button floated="right" compact onClick={increaseAnsArr} style={{marginLeft: '8px'}}>
+                      add ans
+                    </Button>
+                  </Button.Group>
                 </Form>
               </Segment>
             </Segment>

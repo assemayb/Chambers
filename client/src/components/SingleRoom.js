@@ -54,7 +54,7 @@ function SingleRoom(props) {
     // console.log(questionTitle, answerValue);
     const currentUser = props.currentUser
     if (questionTitle && answerValue) {
-      axios
+      authAxios
         .put(`${roomsURL}/${newTitle}/vote-for-answer`, {
           questionTitle,
           answer: answerValue,
