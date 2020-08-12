@@ -26,14 +26,15 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get Certain user rooms
+// Get a certain user rooms
 router.get("/user-rooms", authenticateUser, async (req, res) => {
   const adminName = req.user.username;
   try {
-    let admin = await User.findOne({ name: adminName });
-    let adminID = admin && admin._id;
+    const admin = await User.findOne({ name: adminName });
+    const adminID = admin && admin._id;
+
     if (adminID) {
-      let allUserRooms = await Room.find({ admin: adminID });
+      const allUserRooms = await Room.find({ admin: adminID });
       let allUserRoomsName = [];
       allUserRooms.forEach((room) => {
         allUserRoomsName.push({
@@ -42,7 +43,8 @@ router.get("/user-rooms", authenticateUser, async (req, res) => {
           parts: room.participants,
         });
       });
-      res.status(200).json(allUserRoomsName);
+      const adminRoomsAsUser = admin.rooms;
+      res.status(200).json([allUserRoomsName, adminRoomsAsUser]);
     } else {
       console.log("No admin with this id");
     }
@@ -136,13 +138,17 @@ router.delete("/:name", authenticateUser, async (req, res) => {
     if (!room) return res.json({ msg: "No room" });
     const roomAdminName = room.admin.name;
     if (reqUserName === roomAdminName) {
-      let allRoomQuestions = await Question.find({ room: roomID}).lean()
-      for(let question of allRoomQuestions){
-        let questionID =  question._id
-        await Answer.deleteMany({ question : questionID })
+      let allRoomQuestions = await Question.find({ room: roomID }).lean();
+      for (let question of allRoomQuestions) {
+        let questionID = question._id;
+        await Answer.deleteMany({ question: questionID });
       }
       await Question.deleteMany({ room: roomID });
       await Room.deleteOne(room);
+      await User.updateOne(
+        { name: reqUserName },
+        { $pull: { rooms: roomName } }
+      );
       res.json({ msg: "deleted" });
     }
   } catch (error) {
@@ -254,39 +260,66 @@ router.delete("/:name/delete-answer", authenticateUser, async (req, res) => {
   }
 });
 
-//VOTING FOR A SPECIFIC ANSWER ... SELECTING AN ANSWER
 
+//VOTING FOR A SPECIFIC ANSWER ... SELECTING AN ANSWER
 router.put("/:name/vote-for-answer", authenticateUser, async (req, res) => {
   const roomName = req.params.name;
   const username = req.user.username;
   const { questionTitle, answer } = req.body;
+
   try {
-    let room = await Room.findOne({ title: roomName }).lean();
-    let roomParticipants = room.participants;
-    let roomPartLength = roomParticipants.length;
-    if (roomParticipants === undefined || roomPartLength < 1) {
-      await Room.update(
+    const user = await User.findOne({ name: username });
+    const userRooms = user.rooms;
+
+    const room = await Room.findOne({ title: roomName });
+    const roomParticipants = room.participants;
+
+    const roomPartLength = roomParticipants && roomParticipants.length;
+    if (roomPartLength == 0) {
+      await Room.updateOne(
         { title: roomName },
         { $push: { participants: username } }
       );
+      if (userRooms.length == 0) {
+        await User.updateOne(
+          { name: username },
+          { $push: { rooms: roomName } }
+        );
+      }
     } else {
       let isUserInPart = false;
-      for (let user of roomParticipants) {
-        if (user === username) {
+      let isRoomInUserRooms = false;
+
+      for (let part of roomParticipants) {
+        if (part === username) {
           isUserInPart = true;
         }
       }
       if (!isUserInPart) {
-        await Room.update(
+        await Room.updateOne(
           { title: roomName },
           { $push: { participants: username } }
         );
-        console.log("User added to this room's participants");
+      }
+      if (userRooms.length >= 1) {
+        for (let room of userRooms) {
+          if (room === roomName) {
+            isRoomInUserRooms = true;
+          }
+        }
+        if (!isRoomInUserRooms) {
+          await User.updateOne(
+            { name: username },
+            { $push: { rooms: roomName } }
+          );
+        }
       } else {
-        console.log("User is in this room participants");
+        await User.updateOne(
+          { name: username },
+          { $push: { rooms: roomName } }
+        );
       }
     }
-
     let roomID = room && room._id;
     let question = await Question.findOne({
       title: questionTitle,

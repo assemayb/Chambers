@@ -1,4 +1,4 @@
-import React from "react";
+import React, { StrictMode } from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
 import { createStore, compose, applyMiddleware, combineReducers } from "redux";
@@ -14,11 +14,9 @@ const rootReducer = combineReducers({
 
 const store = createStore(rootReducer, composeEnhances(applyMiddleware(thunk)));
 
-
 ReactDOM.render(
   <Provider store={store}>
-      <App />
+    <App />
   </Provider>,
   document.getElementById("root")
 );
-

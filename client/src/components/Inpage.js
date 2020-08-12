@@ -113,7 +113,7 @@ export default function Inpage({
           .then((res) => {
             console.log(res.data);
             setLoading(true);
-            window.location.reload(false)
+            window.location.reload(false);
           })
           .catch((err) => console.error(err));
       } else {
@@ -138,7 +138,7 @@ export default function Inpage({
       <Grid columns={2} doubling>
         <Grid.Row>
           <Grid.Column width={5}>
-            <Segment style={{ marginLeft: "2rem" }}>
+            <Segment style={styles.segmentShadow}>
               <Segment
                 style={{
                   backgroundColor: "#FAFAFA",
@@ -171,7 +171,7 @@ export default function Inpage({
           </Grid.Column>
 
           <Grid.Column width={5}>
-            <Segment style={{ marginLeft: "2rem" }}>
+            <Segment style={styles.segmentShadow}>
               <Segment
                 style={{
                   backgroundColor: "#FAFAFA",
@@ -225,7 +225,12 @@ export default function Inpage({
                     >
                       create
                     </Button>
-                    <Button floated="right" compact onClick={increaseAnsArr} style={{marginLeft: '8px'}}>
+                    <Button
+                      floated="right"
+                      compact
+                      onClick={increaseAnsArr}
+                      style={{ marginLeft: "8px" }}
+                    >
                       add ans
                     </Button>
                   </Button.Group>
@@ -234,7 +239,7 @@ export default function Inpage({
             </Segment>
           </Grid.Column>
           <Grid.Column width={5}>
-            <Segment style={{ marginLeft: "2rem" }}>
+            <Segment style={styles.segmentShadow}>
               <Segment
                 style={{
                   backgroundColor: "#FAFAFA",
@@ -282,4 +287,11 @@ export default function Inpage({
       </Grid>
     </Container>
   );
+}
+
+
+const styles = {
+  segmentShadow: {
+    marginLeft: "2rem",
+  }
 }

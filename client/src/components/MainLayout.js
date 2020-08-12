@@ -14,15 +14,15 @@ import { roomsURL } from "../constants";
 import { connect } from "react-redux";
 import { authAxios, prettifyLocation } from "../utils";
 
-const MainLayout = (props) => {  
+const MainLayout = (props) => {
   const isLoggedIn = props.isLoggedIn;
   const admin = props.currentLoggedUser;
 
-  const [ currentAdmin , setcurrentAdmin ] = useState(admin)
+  const [currentAdmin, setcurrentAdmin] = useState(admin);
   const [userRooms, setUserRooms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [ dataChanged , setDataChanged ] = useState(false)
-  
+  const [dataChanged, setDataChanged] = useState(false);
+
   useEffect(() => {
     const getUserRooms = () => {
       if (isLoggedIn) {
@@ -30,7 +30,8 @@ const MainLayout = (props) => {
           .get(`${roomsURL}/user-rooms`)
           .then((res) => {
             setLoading(false);
-            setUserRooms(res.data);
+            setUserRooms(res.data[0]);
+            console.log(res.data);
           })
           .catch((err) => {
             console.error(err);
@@ -38,10 +39,23 @@ const MainLayout = (props) => {
       }
     };
     getUserRooms();
-  }, [loading, setLoading,  dataChanged]);
+  }, [loading, setLoading, dataChanged, admin]);
+
+  // only fires once to reload when diff users login 
+  useEffect(() => {
+    const reloadFired = localStorage.getItem("reloadFired");
+    if (!reloadFired) {
+      window.location.reload(false);
+      localStorage.setItem("reloadFired", true);
+    }
+    return () => {
+      localStorage.removeItem("reloadFired");
+    }
+  }, []);
+
 
   const enterSingleRoom = (title) => {
-    const newTitle = prettifyLocation(title)
+    const newTitle = prettifyLocation(title);
     props.history.push(`/rooms/${newTitle}`);
   };
 
@@ -62,7 +76,7 @@ const MainLayout = (props) => {
       )}
     </Container>
   );
-}
+};
 
 const styles = {
   container: {
