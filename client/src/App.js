@@ -10,7 +10,6 @@ import Footer from "./components/Footer";
 import { authCheckState } from "./store/actions/auth";
 
 function App(props) {
-  // HANDLING RELOADING
   if (props.storageHasTokens) {
     props.checkState();
   }
@@ -20,7 +19,7 @@ function App(props) {
     <Fragment>
       <Router>
         <BaseMenu />
-        <BaseRouter />)
+        <BaseRouter />
         <Footer />
       </Router>
     </Fragment>

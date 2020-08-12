@@ -26,6 +26,29 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get User Question
+router.get("/user-questions", authenticateUser, async (req, res) => {
+  const adminName = req.user.username;
+  let allUserQuestions = [];
+  try {
+    const admin = await User.findOne({ name: adminName });
+    const adminID = admin && admin._id;
+    const adminRooms = await Room.find({ admin: adminID }, (err, resp) => {
+      err && console.error(err);
+    });
+    for (let room of adminRooms) {
+      const roomID = room._id;
+      const questions = await Question.find({ room: roomID }).lean();
+      // questions.forEach(q => {
+      //   allUserQuestions.push(q.title)
+      // })
+      allUserQuestions.push(...questions)
+    }
+    res.status(201).json(allUserQuestions);
+  } catch (err) {
+    console.error(err);
+  }
+});
 // Get a certain user rooms
 router.get("/user-rooms", authenticateUser, async (req, res) => {
   const adminName = req.user.username;
@@ -52,6 +75,7 @@ router.get("/user-rooms", authenticateUser, async (req, res) => {
     console.error(err);
   }
 });
+
 // ENTERING A SINGLE ROOM
 router.get("/:name", authenticateUser, async (req, res) => {
   const roomName = req.params.name;
@@ -259,7 +283,6 @@ router.delete("/:name/delete-answer", authenticateUser, async (req, res) => {
     console.error(error);
   }
 });
-
 
 //VOTING FOR A SPECIFIC ANSWER ... SELECTING AN ANSWER
 router.put("/:name/vote-for-answer", authenticateUser, async (req, res) => {

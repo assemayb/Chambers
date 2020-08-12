@@ -13,7 +13,7 @@ const BaseMenu = (props) => {
     <Menu size="large" color="blue" style={styles.menu}>
       <Link to="/">
         <Menu.Item
-          style={{ height: '100%', width: '100%'}}
+          style={{ height: "100%", width: "100%" }}
           name="home"
           active={activeItem === "home"}
           onClick={handleItemClick}
@@ -24,33 +24,32 @@ const BaseMenu = (props) => {
       </Link>
       <Link to="/allrooms">
         <Menu.Item
-          style={{ height: '100%', width: '100%'}}
+          style={{ height: "100%", width: "100%" }}
           icon="table"
           name="chambers"
           active={activeItem === "chambers"}
           onClick={handleItemClick}
         />
       </Link>
-      {/* <Link to="/">
-        <Menu.Item
-          style={{ height: '100%', width: '100%'}}
-          icon="table"
-          name="public"
-          active={activeItem === "public"}
-          onClick={handleItemClick}
-        />
-      </Link> */}
+
       <Menu.Menu position="right">
-        <Menu.Item
-          name="profile"
-          icon="user circle"
-          active={activeItem === "profile"}
-          onClick={handleItemClick}
-        />
+        <Link to="/profile">
+          <Menu.Item
+            style={{ height: "100%", width: "100%" }}
+            name="profile"
+            icon="user circle"
+            // icon="user"
+            active={activeItem === "profile"}
+            onClick={handleItemClick}
+          />
+        </Link>
+        
         <Link to="/login">
           <Menu.Item>
             {token ? (
-              <Button onClick={props.logout}color="red">Log out</Button>
+              <Button onClick={props.logout} color="red">
+                Log out
+              </Button>
             ) : (
               <Button color="blue">Log in</Button>
             )}
@@ -75,7 +74,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    logout: () => dispatch(authLogout())
+    logout: () => dispatch(authLogout()),
   };
 };
 export default connect(mapStateToProps, mapDispatchToProps)(BaseMenu);

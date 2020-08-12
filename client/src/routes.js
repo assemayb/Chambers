@@ -7,6 +7,7 @@ import MainLayout from "./components/MainLayout";
 import Login from "./components/Login";
 import SignUp from "./components/SignUp";
 import SingleRoom from "./components/SingleRoom";
+import UserProfile from "./components/UserProfile";
 
 const BaseRouter = () => (
   <Switch>
@@ -15,8 +16,7 @@ const BaseRouter = () => (
     <Route exact path="/signup" component={SignUp} />
     <Route path="/allrooms" component={Room} />
     <Route path="/rooms/:roomName" component={SingleRoom} />
-
-    
+    <Route path="/profile" component={UserProfile} />
     {/* Profile */}
   </Switch>
 );
