@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
+
 // creating a user
 router.post("/create-account", async (req, res) => {
   try {
@@ -52,6 +53,7 @@ router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
     const userObj = { username };
+
     const accessToken = generateAccessToken(userObj);
     const refreshToken = jwt.sign(userObj, process.env.REFRESH_TOKEN_SECRET);
 
@@ -93,8 +95,7 @@ router.post("/token", async (req, res) => {
   }
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
     if (err) res.sendStatus(403);
-    // const name = {name: user.name}
-    const userObj = { username: user.name };
+    const userObj = { username: user.username };
     const accessToken = generateAccessToken(userObj);
     res.json({ accessToken });
   });

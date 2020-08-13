@@ -42,7 +42,7 @@ router.get("/user-questions", authenticateUser, async (req, res) => {
       // questions.forEach(q => {
       //   allUserQuestions.push(q.title)
       // })
-      allUserQuestions.push(...questions)
+      allUserQuestions.push(...questions);
     }
     res.status(201).json(allUserQuestions);
   } catch (err) {
@@ -374,11 +374,15 @@ function authenticateUser(req, res, next) {
     return res.status(401).json({ msg: "You are not logged in" });
   } else {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
+      console.log("Authenticating the user ");
+      console.log(user);
+
       if (error) {
         console.error(error);
-        // return res.status(403).json({ msg: 'Not Authenticated'})
-        return res.status(403).json(error);
+        // res.status(403).json({ msg: "Not Authenticated" });
+        // return res.status(403).json(error);
       }
+      console.log(user)
       req.user = user;
       next();
     });

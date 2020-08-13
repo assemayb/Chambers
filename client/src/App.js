@@ -10,7 +10,8 @@ import Footer from "./components/Footer";
 import { authCheckState } from "./store/actions/auth";
 
 function App(props) {
-  if (props.storageHasTokens) {
+
+  if (props.isAuthenticated) {
     props.checkState();
   }
   const halfAnHour = 15 * 1000 * 60;
@@ -27,14 +28,14 @@ function App(props) {
 }
 
 const mapStateToProps = (state) => {
-  const tokens = {
-    acces: localStorage.getItem("accessToken"),
-    refresh: localStorage.getItem("refreshToken"),
-  };
+  let tokens = []
+  const access = localStorage.getItem("accessToken")
+  const refresh = localStorage.getItem("refreshToken")
+
   return {
     token: state.auth.token,
     isAuthenticated: state.auth.token !== null,
-    storageHasTokens: tokens.length !== 0,
+    storageHasTokens: access != null && refresh != null
   };
 };
 

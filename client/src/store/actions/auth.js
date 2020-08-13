@@ -67,18 +67,19 @@ export const authLogin = (username, password) => {
         password,
       })
       .then((res) => {
-        let msg = res.data.msg
+        let msg = res.data.msg;
         if (msg) {
-          dispatch(authFail(msg))
+          dispatch(authFail(msg));
         } else {
+          console.log(res.data);
           const { accessToken, refreshToken, username } = res.data;
           const expDate = new Date(new Date().getTime() + 3600 * 1000);
           localStorage.setItem("username", username);
           localStorage.setItem("accessToken", accessToken);
           localStorage.setItem("refreshToken", refreshToken);
           localStorage.setItem("expDate", expDate);
-          dispatch(authStart());
 
+          dispatch(authStart());
           dispatch(authSuccess(accessToken, username));
         }
       })
@@ -109,30 +110,33 @@ export const authCheckState = () => {
   let username = localStorage.getItem("username");
   let accessToken = localStorage.getItem("accessToken");
   let refreshToken = localStorage.getItem("refreshToken");
-
   let exp = localStorage.getItem("expDate");
   let expDate = exp && new Date(exp);
-  const nowDate = new Date(new Date().getTime());
+
 
   console.log("Auth CheckState function");
-
   return (dispatch) => {
     if (refreshToken && accessToken) {
-      if (expDate > nowDate) {
+      if (expDate > new Date()) {
         dispatch(authSuccess(accessToken, username));
       } else {
         axios
           .post(`${authURL}/token`, { token: refreshToken })
           .then((res) => {
+            const acT = res.data.accessToken;
+            console.log(res.data);
             localStorage.removeItem("accessToken");
             localStorage.removeItem("expDate");
-            localStorage.setItem("accessToken", res.data.accessToken);
+            localStorage.setItem("accessToken", acT);
             const expDate = new Date(new Date().getTime() + 3600 * 1000);
             localStorage.setItem("expDate", expDate);
-            dispatch(authSuccess(res.data.accessToken, username));
+            dispatch(authStart());
+            dispatch(authSuccess(acT, username));
           })
           .catch((err) => console.error(err));
       }
+    } else {
+      console.log("No tokens");
     }
   };
 };
