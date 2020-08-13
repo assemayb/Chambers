@@ -19,11 +19,9 @@ import axios from "axios";
 function SingleRoom(props) {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [votAdded, setVoteAdded] = useState(false)
   const [message, setMessage] = useState("");
-  const [dataChanged, setDataChanged] = useState(false);
-
-  const [votes, setVotes] = useState(0);
-
+  
   let roomTitle = props.match.params.roomName;
   roomTitle = roomTitle.split("_");
   let arrLength = roomTitle.length;
@@ -40,18 +38,17 @@ function SingleRoom(props) {
           .get(`${roomsURL}/${newTitle}`)
           .then((res) => {
             let data = res.data;
-            setLoading(false);
             setQuestions(data);
+            setLoading(false);
           })
           .catch((err) => console.error(err));
       }
     };
     getRoomData();
-  }, [loading, setLoading]);
+  }, [votAdded, setVoteAdded]);
 
   const submitAnswer = (dataObj) => {
     const { questionTitle, answerValue } = dataObj;
-    // console.log(questionTitle, answerValue);
     const currentUser = props.currentUser
     if (questionTitle && answerValue) {
       authAxios
@@ -61,11 +58,9 @@ function SingleRoom(props) {
           username: currentUser
         })
         .then((res) => {
-          console.log(res.data);
-          setLoading(true);
-          // setTimeout(() => setLoading(false), 2000);
+          setLoading(true)
+          setVoteAdded(prev => !prev)
         })
-        .then(setLoading(false))
         .catch((err) => {
           console.error(err);
         });

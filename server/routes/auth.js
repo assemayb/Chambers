@@ -7,7 +7,6 @@ const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
-
 // creating a user
 router.post("/create-account", async (req, res) => {
   try {
@@ -40,7 +39,7 @@ router.post("/logout", async (req, res) => {
       if (err) {
         console.error(err);
       }
-      console.log("logged out")
+      console.log("logged out");
       res.status(204);
     });
   } catch (error) {
@@ -53,10 +52,8 @@ router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
     const userObj = { username };
-
     const accessToken = generateAccessToken(userObj);
     const refreshToken = jwt.sign(userObj, process.env.REFRESH_TOKEN_SECRET);
-
     if (username && password) {
       let user = await User.findOne({ name: username });
       if (!user) {
@@ -65,13 +62,12 @@ router.post("/login", async (req, res) => {
         const isCorrect = await bcrypt.compare(password, user.password);
         if (isCorrect) {
           await RefreshTokens.create(
-            { value: refreshToken, username},
+            { value: refreshToken, username },
             (err, response) => {
               if (err) console.error(err);
               console.log("Refresh Token for Login added to database");
             }
           );
-
           res.status(200).json({ username, accessToken, refreshToken });
         } else {
           res.json({ msg: "Invalid Password" });

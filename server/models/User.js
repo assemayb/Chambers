@@ -9,13 +9,11 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-
   // Array of rooms the user is in
   rooms: {
     type: [String], 
     required: false
   },
-  
   createdAt: {
     type: Date,
     default: Date.now,

@@ -6,16 +6,15 @@ import { authLogin } from "./store/actions/auth";
 import { connect } from "react-redux";
 import BaseMenu from "./components/Menu";
 import Footer from "./components/Footer";
-
 import { authCheckState } from "./store/actions/auth";
 
-function App(props) {
-
-  if (props.isAuthenticated) {
-    props.checkState();
+function App({ checkState, refTokenExist }) {
+  if (refTokenExist) {
+    checkState();
   }
-  const halfAnHour = 15 * 1000 * 60;
-  setInterval(() => props.checkState(), halfAnHour);
+  const quarter = 15 * 1000 * 60;
+  setInterval(() => checkState(), quarter);
+
   return (
     <Fragment>
       <Router>
@@ -28,14 +27,11 @@ function App(props) {
 }
 
 const mapStateToProps = (state) => {
-  let tokens = []
-  const access = localStorage.getItem("accessToken")
-  const refresh = localStorage.getItem("refreshToken")
-
+  const refToken = localStorage.getItem('refreshToken')
   return {
     token: state.auth.token,
     isAuthenticated: state.auth.token !== null,
-    storageHasTokens: access != null && refresh != null
+    refTokenExist: refToken !== null
   };
 };
 

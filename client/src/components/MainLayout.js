@@ -41,7 +41,8 @@ const MainLayout = (props) => {
     getUserRooms();
   }, [loading, setLoading, dataChanged, admin]);
 
-  // only fires once to reload when diff users login 
+  // only fires once to reload when diff users login
+
   useEffect(() => {
     const reloadFired = localStorage.getItem("reloadFired");
     if (!reloadFired) {
@@ -50,9 +51,8 @@ const MainLayout = (props) => {
     }
     return () => {
       localStorage.removeItem("reloadFired");
-    }
+    };
   }, []);
-
 
   const enterSingleRoom = (title) => {
     const newTitle = prettifyLocation(title);

@@ -110,16 +110,18 @@ export const authCheckState = () => {
   let username = localStorage.getItem("username");
   let accessToken = localStorage.getItem("accessToken");
   let refreshToken = localStorage.getItem("refreshToken");
+
   let exp = localStorage.getItem("expDate");
   let expDate = exp && new Date(exp);
-
+  const nowDate = new Date();
 
   console.log("Auth CheckState function");
   return (dispatch) => {
     if (refreshToken && accessToken) {
-      if (expDate > new Date()) {
+      if (expDate > nowDate) {
         dispatch(authSuccess(accessToken, username));
       } else {
+        console.log("getting a new token, brb!");
         axios
           .post(`${authURL}/token`, { token: refreshToken })
           .then((res) => {
@@ -128,8 +130,8 @@ export const authCheckState = () => {
             localStorage.removeItem("accessToken");
             localStorage.removeItem("expDate");
             localStorage.setItem("accessToken", acT);
-            const expDate = new Date(new Date().getTime() + 3600 * 1000);
-            localStorage.setItem("expDate", expDate);
+            const expirationDate = new Date(new Date().getTime() + 3600 * 1000);
+            localStorage.setItem("expDate", expirationDate);
             dispatch(authStart());
             dispatch(authSuccess(acT, username));
           })

@@ -26,29 +26,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get User Question
-router.get("/user-questions", authenticateUser, async (req, res) => {
-  const adminName = req.user.username;
-  let allUserQuestions = [];
-  try {
-    const admin = await User.findOne({ name: adminName });
-    const adminID = admin && admin._id;
-    const adminRooms = await Room.find({ admin: adminID }, (err, resp) => {
-      err && console.error(err);
-    });
-    for (let room of adminRooms) {
-      const roomID = room._id;
-      const questions = await Question.find({ room: roomID }).lean();
-      // questions.forEach(q => {
-      //   allUserQuestions.push(q.title)
-      // })
-      allUserQuestions.push(...questions);
-    }
-    res.status(201).json(allUserQuestions);
-  } catch (err) {
-    console.error(err);
-  }
-});
 // Get a certain user rooms
 router.get("/user-rooms", authenticateUser, async (req, res) => {
   const adminName = req.user.username;
@@ -75,6 +52,32 @@ router.get("/user-rooms", authenticateUser, async (req, res) => {
     console.error(err);
   }
 });
+
+// Get User Asked Questions
+router.get("/user-questions", authenticateUser, async (req, res) => {
+  const adminName = req.user.username;
+  let allUserQuestions = [];
+  try {
+    const admin = await User.findOne({ name: adminName });
+    const adminID = admin && admin._id;
+    const adminRooms = await Room.find({ admin: adminID }, (err, resp) => {
+      err && console.error(err);
+    });
+    for (let room of adminRooms) {
+      const roomID = room._id;
+      const questions = await Question.find({ room: roomID }).lean();
+      // questions.forEach(q => {
+      //   allUserQuestions.push(q.title)
+      // })
+      allUserQuestions.push(...questions);
+    }
+    res.status(201).json(allUserQuestions);
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+// Get User Asked Questions
 
 // ENTERING A SINGLE ROOM
 router.get("/:name", authenticateUser, async (req, res) => {
@@ -374,15 +377,12 @@ function authenticateUser(req, res, next) {
     return res.status(401).json({ msg: "You are not logged in" });
   } else {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
-      console.log("Authenticating the user ");
-      console.log(user);
-
       if (error) {
         console.error(error);
         // res.status(403).json({ msg: "Not Authenticated" });
         // return res.status(403).json(error);
       }
-      console.log(user)
+      // console.log(user)
       req.user = user;
       next();
     });
