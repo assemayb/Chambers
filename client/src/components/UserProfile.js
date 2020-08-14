@@ -74,7 +74,7 @@ function UserProfile({ loggedUser, history }) {
           Hey what's up, {loggedUser} !
         </Header>
       </Container>
-      <Grid columns="equal" >
+      <Grid columns="equal">
         <Grid.Row cols={3}>
           <Grid.Column>
             <Segment>
@@ -115,7 +115,7 @@ function UserProfile({ loggedUser, history }) {
                   as="h3"
                   style={{ padding: ".50rem" }}
                 >
-                <Icon name="box"/>
+                  <Icon name="box" />
                   Rooms you partake in
                 </Header>
                 <Segment>
@@ -134,11 +134,10 @@ function UserProfile({ loggedUser, history }) {
                               }}
                             >
                               <Card.Content
-                                style={{ cursor: "pointer", padding: '.25rem' }}
+                                style={{ cursor: "pointer", padding: ".25rem" }}
                                 onClick={() => enterSingleRoom(room)}
                               >
                                 <Card.Header>{room}</Card.Header>
-                                {/* {room.title} */}
                               </Card.Content>
                             </Card>
                           </Container>
@@ -150,7 +149,7 @@ function UserProfile({ loggedUser, history }) {
               </Segment>
             </List>
           </Grid.Column>
-          <Grid.Column >
+          <Grid.Column>
             <Segment>
               <List style={{ textAlign: "center" }} relaxed>
                 <Header
@@ -158,7 +157,7 @@ function UserProfile({ loggedUser, history }) {
                   as="h3"
                   style={{ padding: ".50rem" }}
                 >
-                  <Icon name="box"/>
+                  <Icon name="box" />
                   Rooms you created
                 </Header>
                 <Segment>
@@ -181,7 +180,6 @@ function UserProfile({ loggedUser, history }) {
                                 onClick={() => enterSingleRoom(room.title)}
                               >
                                 <Card.Header>{room.title}</Card.Header>
-                                {/* {room.title} */}
                               </Card.Content>
                             </Card>
                           </Container>
@@ -211,7 +209,7 @@ const styles = {
     marginLeft: "4rem",
     marginRight: "4rem",
     padding: "2rem",
-    textAlign: "center"
+    textAlign: "center",
   },
 };
 

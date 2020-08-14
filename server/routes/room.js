@@ -82,19 +82,36 @@ router.get("/user-questions", authenticateUser, async (req, res) => {
 // ENTERING A SINGLE ROOM
 router.get("/:name", authenticateUser, async (req, res) => {
   const roomName = req.params.name;
+  const username = req.user.username;
   try {
-    let room = await Room.findOne({ title: roomName }).lean();
+    const room = await Room.findOne({ title: roomName }).lean();
     if (!room) {
       res.sendStatus(404);
     } else {
-      let roomID = room && room._id;
-      let relatedQuestions = await Question.find({ room: roomID })
+      const roomID = room && room._id;
+      const relatedQuestions = await Question.find({ room: roomID })
         .sort({ createdAt: "desc" })
         .lean();
+
+      const user = await User.find({ name: username }).lean();
+      const userAnsweredQuestions = user.answeredQuestions;
+      const userAnsweredQuestionsLength =
+        userAnsweredQuestions && userAnsweredQuestions.length;
+
+      if (userAnsweredQuestionsLength !== 0) {
+        for (let i in relatedQuestions) {
+          for (let j in userAnsweredQuestions) {
+            if (relatedQuestions[i].title === userAnsweredQuestions[j]) {
+              delete relatedQuestions[i];
+            }
+          }
+        }
+      }
+
       for (let question of relatedQuestions) {
-        let questionObj = question;
-        let questionID = question._id;
-        let questionRelatedAns = await Answer.find({ question: questionID })
+        const questionObj = question;
+        const questionID = question._id;
+        const questionRelatedAns = await Answer.find({ question: questionID })
           .sort({ createdAt: "desc" })
           .lean();
         if (questionRelatedAns) {
@@ -102,8 +119,8 @@ router.get("/:name", authenticateUser, async (req, res) => {
           question = questionObj;
         }
       }
-      res.json(relatedQuestions).status(200);
-      // console.log(JSON.stringify(relatedQuestions, null, 5))
+
+      res.status(200).json(relatedQuestions);
     }
   } catch (error) {
     console.error(error);
@@ -296,6 +313,7 @@ router.put("/:name/vote-for-answer", authenticateUser, async (req, res) => {
   try {
     const user = await User.findOne({ name: username });
     const userRooms = user.rooms;
+    const userAnsweredQuestins = user.answeredQuestions;
 
     const room = await Room.findOne({ title: roomName });
     const roomParticipants = room.participants;
@@ -309,7 +327,7 @@ router.put("/:name/vote-for-answer", authenticateUser, async (req, res) => {
       if (userRooms.length == 0) {
         await User.updateOne(
           { name: username },
-          { $push: { rooms: roomName } }
+          { $push: { rooms: roomName, answeredQuestions: questionTitle } }
         );
       }
     } else {
@@ -327,6 +345,7 @@ router.put("/:name/vote-for-answer", authenticateUser, async (req, res) => {
           { $push: { participants: username } }
         );
       }
+
       if (userRooms.length >= 1) {
         for (let room of userRooms) {
           if (room === roomName) {
@@ -338,6 +357,14 @@ router.put("/:name/vote-for-answer", authenticateUser, async (req, res) => {
             { name: username },
             { $push: { rooms: roomName } }
           );
+          console.log(answeredQuestions)
+          const isQIn = answeredQuestions.includes(questionTitle);
+          if (!isQIn) {
+            await User.updateOne(
+              { name: username },
+              { $push: { answeredQuestions: questionTitle } }
+            );
+          }
         }
       } else {
         await User.updateOne(
@@ -346,8 +373,9 @@ router.put("/:name/vote-for-answer", authenticateUser, async (req, res) => {
         );
       }
     }
-    let roomID = room && room._id;
-    let question = await Question.findOne({
+    const roomID = room && room._id;
+
+    const question = await Question.findOne({
       title: questionTitle,
       room: roomID,
     });
@@ -382,7 +410,6 @@ function authenticateUser(req, res, next) {
         // res.status(403).json({ msg: "Not Authenticated" });
         // return res.status(403).json(error);
       }
-      // console.log(user)
       req.user = user;
       next();
     });
