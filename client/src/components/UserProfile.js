@@ -28,15 +28,17 @@ function UserProfile({ loggedUser, history }) {
     laoding: true,
     data: [],
   });
+  const [answeredQuestios, setAnsweredQuestios] = useState([]);
 
   useEffect(() => {
     const getCreatedQuestions = () => {
-      console.log("created quesitons");
       authAxios
         .get(`${roomsURL}/user-questions`)
         .then((res) => {
-          console.log(res.data);
-          setCreatedQuestions({ data: res.data });
+          console.log(res.data[0]);
+          const resData = res.data;
+          setCreatedQuestions({ data: resData[0] });
+          setAnsweredQuestios(resData[1]);
         })
         .catch((err) => console.error(err));
     };
@@ -75,7 +77,7 @@ function UserProfile({ loggedUser, history }) {
         </Header>
       </Container>
       <Grid columns="equal">
-        <Grid.Row cols={3}>
+        <Grid.Row cols={4}>
           <Grid.Column>
             <Segment>
               <List>
@@ -187,6 +189,37 @@ function UserProfile({ loggedUser, history }) {
                       );
                     })
                   )}
+                </Segment>
+              </List>
+            </Segment>
+          </Grid.Column>
+          <Grid.Column>
+            <Segment>
+              <List>
+                <Header
+                  textAlign="center"
+                  as="h3"
+                  style={{ padding: ".50rem" }}
+                >
+                  <Icon name="question circle"></Icon>
+                  Questions you answered
+                </Header>
+                <Segment>
+                  <>
+                    {createdQuestions.laoding ? (
+                      <Loader active inline="centered" />
+                    ) : (
+                      answeredQuestios.map((q, index) => (
+                        <List.Item link key={q.id}>
+                          <Container>
+                            <Card.Content style={{ cursor: "pointer" }}>
+                              <Card.Header>{q}</Card.Header>
+                            </Card.Content>
+                          </Container>
+                        </List.Item>
+                      ))
+                    )}
+                  </>
                 </Segment>
               </List>
             </Segment>

@@ -270,6 +270,7 @@ export default function Inpage({
                             </Card.Content>
                             <Card.Content>
                               <Button
+                                color="google plus"
                                 onClick={() => handleOpenModal(room.title)}
                                 icon="trash"
                               ></Button>
@@ -289,9 +290,8 @@ export default function Inpage({
   );
 }
 
-
 const styles = {
   segmentShadow: {
     marginLeft: "2rem",
-  }
-}
+  },
+};

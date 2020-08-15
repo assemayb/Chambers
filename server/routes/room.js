@@ -59,6 +59,7 @@ router.get("/user-questions", authenticateUser, async (req, res) => {
   let allUserQuestions = [];
   try {
     const admin = await User.findOne({ name: adminName });
+    const adminAnsweredQuestiosn = admin.answeredQuestions
     const adminID = admin && admin._id;
     const adminRooms = await Room.find({ admin: adminID }, (err, resp) => {
       err && console.error(err);
@@ -66,18 +67,13 @@ router.get("/user-questions", authenticateUser, async (req, res) => {
     for (let room of adminRooms) {
       const roomID = room._id;
       const questions = await Question.find({ room: roomID }).lean();
-      // questions.forEach(q => {
-      //   allUserQuestions.push(q.title)
-      // })
       allUserQuestions.push(...questions);
     }
-    res.status(201).json(allUserQuestions);
+    res.status(201).json([allUserQuestions, adminAnsweredQuestiosn]);
   } catch (err) {
     console.error(err);
   }
 });
-
-// Get User Asked Questions
 
 // ENTERING A SINGLE ROOM
 router.get("/:name", authenticateUser, async (req, res) => {
@@ -89,37 +85,51 @@ router.get("/:name", authenticateUser, async (req, res) => {
       res.sendStatus(404);
     } else {
       const roomID = room && room._id;
+      const roomAdminID = room.admin;
+      const adminData = await User.findOne({ _id: roomAdminID });
+      const roomAdminName = adminData.name;
+
       const relatedQuestions = await Question.find({ room: roomID })
         .sort({ createdAt: "desc" })
         .lean();
 
-      const user = await User.find({ name: username }).lean();
+      const user = await User.findOne({ name: username });
+      const questionsSet = new Set();
+      for (let question of user.answeredQuestions) {
+        questionsSet.add(question);
+      }
+
       const userAnsweredQuestions = user.answeredQuestions;
       const userAnsweredQuestionsLength =
         userAnsweredQuestions && userAnsweredQuestions.length;
+      console.log(roomAdminName)
+      console.log(req.user.username)
 
-      if (userAnsweredQuestionsLength !== 0) {
-        for (let i in relatedQuestions) {
-          for (let j in userAnsweredQuestions) {
-            if (relatedQuestions[i].title === userAnsweredQuestions[j]) {
-              delete relatedQuestions[i];
+      if (roomAdminName !== req.user.username) {
+        if (userAnsweredQuestionsLength !== 0) {
+          for (let i in relatedQuestions) {
+            const quest = relatedQuestions[i].title;
+            if (questionsSet.has(quest)) {
+              relatedQuestions.splice(i, 1);
             }
           }
         }
       }
 
-      for (let question of relatedQuestions) {
-        const questionObj = question;
-        const questionID = question._id;
-        const questionRelatedAns = await Answer.find({ question: questionID })
-          .sort({ createdAt: "desc" })
-          .lean();
-        if (questionRelatedAns) {
-          questionObj.answers = questionRelatedAns;
-          question = questionObj;
+      if (relatedQuestions.length !== 0) {
+        for (let question of relatedQuestions) {
+          const questionObj = question;
+          const questionID = question._id;
+          const questionRelatedAns = await Answer.find({ question: questionID })
+            .sort({ createdAt: "desc" })
+            .lean();
+          if (questionRelatedAns) {
+            questionObj.answers = questionRelatedAns;
+            question = questionObj;
+          }
         }
       }
-
+      console.log(relatedQuestions)
       res.status(200).json(relatedQuestions);
     }
   } catch (error) {
@@ -357,14 +367,6 @@ router.put("/:name/vote-for-answer", authenticateUser, async (req, res) => {
             { name: username },
             { $push: { rooms: roomName } }
           );
-          console.log(answeredQuestions)
-          const isQIn = answeredQuestions.includes(questionTitle);
-          if (!isQIn) {
-            await User.updateOne(
-              { name: username },
-              { $push: { answeredQuestions: questionTitle } }
-            );
-          }
         }
       } else {
         await User.updateOne(
@@ -372,9 +374,25 @@ router.put("/:name/vote-for-answer", authenticateUser, async (req, res) => {
           { $push: { rooms: roomName } }
         );
       }
+
+      const quesUndefinedNUll =
+        userAnsweredQuestins === undefined || userAnsweredQuestins === null;
+      if (quesUndefinedNUll) {
+        await User.updateOne(
+          { name: username },
+          { $push: { answeredQuestions: questionTitle } }
+        );
+      } else {
+        const isQIn = userAnsweredQuestins.includes(questionTitle);
+        if (!isQIn) {
+          await User.updateOne(
+            { name: username },
+            { $push: { answeredQuestions: questionTitle } }
+          );
+        }
+      }
     }
     const roomID = room && room._id;
-
     const question = await Question.findOne({
       title: questionTitle,
       room: roomID,
