@@ -10,7 +10,7 @@ import {
   Dimmer,
 } from "semantic-ui-react";
 import { connect } from "react-redux";
-import { NavLink, Redirect } from "react-router-dom";
+import { Redirect } from "react-router-dom";
 import { authSignUp } from "../store/actions/auth";
 
 const RegistrationForm = (props) => {
@@ -20,23 +20,20 @@ const RegistrationForm = (props) => {
   const [loading, setLoading] = useState(false);
 
   const token = props.token;
-  const signupSubmit = async () => {
+  const signupSubmit = () => {
     if (username && password) {
-      await props.signup(username, password);
-      let msg = localStorage.getItem("msg");
-      let status = localStorage.getItem("status");
-      if (!msg) {
-        return;
-      } else {
-        if (status === "400") {
-          setMessage(msg);
-        } else if (status === "201") {
-          setLoading(true);
-          setMessage("User Created, Redirecting to login page.....");
-          setTimeout(() => {
-            props.history.push("/login");
-          }, 2000);
-        }
+      props.signup(username, password);
+      const msg = localStorage.getItem("msg");
+      const status = localStorage.getItem("status");
+      
+      if (status === "403") {
+        setMessage(msg);
+      } else if (status === "201") {
+        setLoading(true);
+        setMessage(msg);
+        setTimeout(() => {
+          props.history.push("/login");
+        }, 2000);
       }
       localStorage.removeItem("msg");
       localStorage.removeItem("status");

@@ -14,11 +14,11 @@ import {
   List,
 } from "semantic-ui-react";
 import { connect } from "react-redux";
-import { Link, withRouter } from "react-router-dom";
+import { Link, withRouter, Redirect } from "react-router-dom";
 import { authAxios, prettifyLocation } from "../utils";
 import { roomsURL } from "../constants";
 
-function UserProfile({ loggedUser, history }) {
+function UserProfile({ loggedUser, isAuthenticated, history }) {
   const [userData, setUserData] = useState({
     loading: true,
     roomAsAdmin: [],
@@ -68,170 +68,181 @@ function UserProfile({ loggedUser, history }) {
     const newTitle = prettifyLocation(title);
     history.push(`/rooms/${newTitle}`);
   };
-  return (
-    <Container style={styles.mainContainer}>
-      <Container style={{ marginBottom: "2rem" }}>
-        <Header style={{ padding: ".50rem", textAlign: "center" }}>
-          {" "}
-          Hey what's up, {loggedUser} !
-        </Header>
-      </Container>
-      <Grid columns="equal">
-        <Grid.Row cols={4}>
-          <Grid.Column>
-            <Segment>
-              <List>
-                <Header
-                  textAlign="center"
-                  as="h3"
-                  style={{ padding: ".50rem" }}
-                >
-                  <Icon name="question circle"></Icon>
-                  Questions you created
-                </Header>
-                <Segment>
-                  <>
-                    {createdQuestions.laoding ? (
-                      <Loader active inline="centered" />
-                    ) : (
-                      createdQuestions.data.map((q, index) => (
-                        <List.Item link key={q.id}>
-                          <Container>
-                            <Card.Content style={{ cursor: "pointer" }}>
-                              <Card.Header>{q.title}</Card.Header>
-                            </Card.Content>
-                          </Container>
-                        </List.Item>
-                      ))
-                    )}
-                  </>
-                </Segment>
-              </List>
-            </Segment>
-          </Grid.Column>
-          <Grid.Column>
-            <List style={{ textAlign: "center" }}>
+  if (isAuthenticated) {
+    return (
+      <Container style={styles.mainContainer}>
+        <Container style={{ marginBottom: "2rem" }}>
+          <Header style={{ padding: ".50rem", textAlign: "center" }}>
+            {" "}
+            Hey what's up, {loggedUser} !
+          </Header>
+        </Container>
+        <Grid columns="equal">
+          <Grid.Row cols={4}>
+            <Grid.Column>
               <Segment>
-                <Header
-                  textAlign="center"
-                  as="h3"
-                  style={{ padding: ".50rem" }}
-                >
-                  <Icon name="box" />
-                  Rooms you partake in
-                </Header>
-                <Segment>
-                  {userData.loading ? (
-                    <Image src="https://react.semantic-ui.com/images/wireframe/paragraph.png" />
-                  ) : (
-                    userData.roomAsPart.map((room) => {
-                      return (
-                        <List.Item key={room.id}>
-                          <Container>
-                            <Card
-                              style={{
-                                padding: ".5rem",
-                                marginBottom: ".5rem",
-                                backgroundColor: "#FAFAFA",
-                              }}
-                            >
-                              <Card.Content
-                                style={{ cursor: "pointer", padding: ".25rem" }}
-                                onClick={() => enterSingleRoom(room)}
-                              >
-                                <Card.Header>{room}</Card.Header>
+                <List>
+                  <Header
+                    textAlign="center"
+                    as="h3"
+                    style={{ padding: ".50rem" }}
+                  >
+                    <Icon name="question circle"></Icon>
+                    Questions you created
+                  </Header>
+                  <Segment>
+                    <>
+                      {createdQuestions.laoding ? (
+                        <Loader active inline="centered" />
+                      ) : (
+                        createdQuestions.data.map((q, index) => (
+                          <List.Item link key={q.id}>
+                            <Container>
+                              <Card.Content style={{ cursor: "pointer" }}>
+                                <Card.Header>{q.title}</Card.Header>
                               </Card.Content>
-                            </Card>
-                          </Container>
-                        </List.Item>
-                      );
-                    })
-                  )}
-                </Segment>
+                            </Container>
+                          </List.Item>
+                        ))
+                      )}
+                    </>
+                  </Segment>
+                </List>
               </Segment>
-            </List>
-          </Grid.Column>
-          <Grid.Column>
-            <Segment>
-              <List style={{ textAlign: "center" }} relaxed>
-                <Header
-                  textAlign="center"
-                  as="h3"
-                  style={{ padding: ".50rem" }}
-                >
-                  <Icon name="box" />
-                  Rooms you created
-                </Header>
+            </Grid.Column>
+            <Grid.Column>
+              <List style={{ textAlign: "center" }}>
                 <Segment>
-                  {userData.loading ? (
-                    <Image src="https://react.semantic-ui.com/images/wireframe/paragraph.png" />
-                  ) : (
-                    userData.roomAsAdmin.map((room) => {
-                      return (
-                        <List.Item key={room.id}>
-                          <Container>
-                            <Card
-                              style={{
-                                padding: ".5rem",
-                                marginBottom: ".5rem",
-                                backgroundColor: "#FAFAFA",
-                              }}
-                            >
-                              <Card.Content
-                                style={{ cursor: "pointer", padding: ".25rem" }}
-                                onClick={() => enterSingleRoom(room.title)}
-                              >
-                                <Card.Header>{room.title}</Card.Header>
-                              </Card.Content>
-                            </Card>
-                          </Container>
-                        </List.Item>
-                      );
-                    })
-                  )}
-                </Segment>
-              </List>
-            </Segment>
-          </Grid.Column>
-          <Grid.Column>
-            <Segment>
-              <List>
-                <Header
-                  textAlign="center"
-                  as="h3"
-                  style={{ padding: ".50rem" }}
-                >
-                  <Icon name="question circle"></Icon>
-                  Questions you answered
-                </Header>
-                <Segment>
-                  <>
-                    {createdQuestions.laoding ? (
-                      <Loader active inline="centered" />
+                  <Header
+                    textAlign="center"
+                    as="h3"
+                    style={{ padding: ".50rem" }}
+                  >
+                    <Icon name="box" />
+                    Rooms you partake in
+                  </Header>
+                  <Segment>
+                    {userData.loading ? (
+                      <Image src="https://react.semantic-ui.com/images/wireframe/paragraph.png" />
                     ) : (
-                      answeredQuestios.map((q, index) => (
-                        <List.Item link key={q.id}>
-                          <Container>
-                            <Card.Content style={{ cursor: "pointer" }}>
-                              <Card.Header>{q}</Card.Header>
-                            </Card.Content>
-                          </Container>
-                        </List.Item>
-                      ))
+                      userData.roomAsPart.map((room) => {
+                        return (
+                          <List.Item key={room.id}>
+                            <Container>
+                              <Card
+                                style={{
+                                  padding: ".5rem",
+                                  marginBottom: ".5rem",
+                                  backgroundColor: "#FAFAFA",
+                                }}
+                              >
+                                <Card.Content
+                                  style={{
+                                    cursor: "pointer",
+                                    padding: ".25rem",
+                                  }}
+                                  onClick={() => enterSingleRoom(room)}
+                                >
+                                  <Card.Header>{room}</Card.Header>
+                                </Card.Content>
+                              </Card>
+                            </Container>
+                          </List.Item>
+                        );
+                      })
                     )}
-                  </>
+                  </Segment>
                 </Segment>
               </List>
-            </Segment>
-          </Grid.Column>
-        </Grid.Row>
-      </Grid>
-    </Container>
-  );
+            </Grid.Column>
+            <Grid.Column>
+              <Segment>
+                <List style={{ textAlign: "center" }} relaxed>
+                  <Header
+                    textAlign="center"
+                    as="h3"
+                    style={{ padding: ".50rem" }}
+                  >
+                    <Icon name="box" />
+                    Rooms you created
+                  </Header>
+                  <Segment>
+                    {userData.loading ? (
+                      <Image src="https://react.semantic-ui.com/images/wireframe/paragraph.png" />
+                    ) : (
+                      userData.roomAsAdmin.map((room) => {
+                        return (
+                          <List.Item key={room.id}>
+                            <Container>
+                              <Card
+                                style={{
+                                  padding: ".5rem",
+                                  marginBottom: ".5rem",
+                                  backgroundColor: "#FAFAFA",
+                                }}
+                              >
+                                <Card.Content
+                                  style={{
+                                    cursor: "pointer",
+                                    padding: ".25rem",
+                                  }}
+                                  onClick={() => enterSingleRoom(room.title)}
+                                >
+                                  <Card.Header>{room.title}</Card.Header>
+                                </Card.Content>
+                              </Card>
+                            </Container>
+                          </List.Item>
+                        );
+                      })
+                    )}
+                  </Segment>
+                </List>
+              </Segment>
+            </Grid.Column>
+            <Grid.Column>
+              <Segment>
+                <List>
+                  <Header
+                    textAlign="center"
+                    as="h3"
+                    style={{ padding: ".50rem" }}
+                  >
+                    <Icon name="question circle"></Icon>
+                    Questions you answered
+                  </Header>
+                  <Segment>
+                    <>
+                      {createdQuestions.laoding ? (
+                        <Loader active inline="centered" />
+                      ) : (
+                        answeredQuestios.map((q, index) => (
+                          <List.Item link key={q.id}>
+                            <Container>
+                              <Card.Content style={{ cursor: "pointer" }}>
+                                <Card.Header>{q}</Card.Header>
+                              </Card.Content>
+                            </Container>
+                          </List.Item>
+                        ))
+                      )}
+                    </>
+                  </Segment>
+                </List>
+              </Segment>
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
+      </Container>
+    );
+  } else {
+    return <Redirect to="/login" />;
+  }
 }
 
 const mapStateToProps = (state) => {
   return {
+    isAuthenticated: state.auth.token !== null,
     loggedUser: state.auth.currentLoggedUser,
   };
 };

@@ -48,9 +48,9 @@ export const authLogout = () => {
 
 export const authSignup = (info) => {
   if (info) {
-    const { msg, status } = info;
-    localStorage.setItem("msg", msg);
-    localStorage.setItem("status", status);
+    const { msg , status } = info;
+    localStorage.setItem("msg", msg );
+    localStorage.setItem("status", status );
   }
   return {
     type: AUTH_SIGNUP,
@@ -90,18 +90,23 @@ export const authLogin = (username, password) => {
 };
 
 export const authSignUp = (username, password) => {
+  console.log("signing up now.....");
   return (dispatch) => {
+    let resData = null;
     axios
       .post(`${authURL}/create-account`, {
         username,
         password,
       })
       .then((res) => {
-        let resData = res.data;
+        resData = { status: res.status, msg: res.data.msg }
+        console.log(resData)
         dispatch(authSignup(resData));
       })
       .catch((err) => {
-        console.error(err);
+        resData = { status: err.response.status, msg: err.response.data.msg }
+        console.log(resData)
+        dispatch(authSignup(resData))
       });
   };
 };

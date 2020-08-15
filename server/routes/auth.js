@@ -14,10 +14,7 @@ router.post("/create-account", async (req, res) => {
     if (username && password) {
       let UserDoesExist = await User.findOne({ name: username });
       if (UserDoesExist) {
-        return res.json({
-          status: "400",
-          msg: "User with same name exists, try another one",
-        });
+        return res.status(403).json({ msg: "user with exact name does exist"})
       }
       let hashedPassword = await bcrypt.hash(password, 10);
       await User.create({ name: username, password: hashedPassword }, () => {
